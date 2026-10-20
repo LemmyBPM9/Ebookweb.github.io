@@ -1,0 +1,72 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 5 0 R /Resources << /Font << /F1 7 0 R >> >> >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 6 0 R /Resources << /Font << /F1 7 0 R >> >> >>
+endobj
+5 0 obj
+<< /Length 313 >>
+stream
+BT
+/F1 22 Tf
+72 710 Td
+(Chapter 1: The Sanctuary of Words) Tj
+/F1 12 Tf
+0 -40 Td
+(Reading is an intimate dialogue between author and reader.) Tj
+0 -24 Td
+(In the digital medium, low-glare palettes prevent ocular halation.) Tj
+0 -24 Td
+(This chapter verifies dual-mode PDF text reflow and visual rendering.) Tj
+ET
+
+endstream
+endobj
+6 0 obj
+<< /Length 336 >>
+stream
+BT
+/F1 22 Tf
+72 710 Td
+(Chapter 2: Dual Mode Reading Ergonomics) Tj
+/F1 12 Tf
+0 -40 Td
+(Visual Mode renders original PDF pages onto HTML5 canvas elements.) Tj
+0 -24 Td
+(Theme tint filters adapt bright backgrounds for night and sepia reading.) Tj
+0 -24 Td
+(Reflowable Mode converts extracted text into dynamic responsive columns.) Tj
+ET
+
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+8 0 obj
+<< /Title (WebReader PDF Test Sample) /Author (Arthur Pendelton) >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000127 00000 n 
+0000000253 00000 n 
+0000000379 00000 n 
+0000000743 00000 n 
+0000001130 00000 n 
+0000001200 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R /Info 8 0 R >>
+startxref
+1283
+%%EOF

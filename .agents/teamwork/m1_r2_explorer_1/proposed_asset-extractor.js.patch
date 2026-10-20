@@ -1,0 +1,37 @@
+--- a/js/parser/asset-extractor.js
++++ b/js/parser/asset-extractor.js
+@@ -103,15 +103,28 @@ export class DOMSanitizer {
+     // Check if root itself is a dangerous element
+     if (root.nodeType === 1) { // Node.ELEMENT_NODE
+       const tag = root.tagName.toLowerCase();
+-      if (
++      const isDangerousTag = (
+         tag === 'script' ||
+         ['object', 'embed', 'applet', 'base', 'iframe', 'frame', 'frameset'].includes(tag)
+-      ) {
+-        root.remove();
+-        return root;
+-      }
+-      if (tag === 'meta' && root.getAttribute('http-equiv')?.toLowerCase() === 'refresh') {
++      );
++      const isDangerousMeta = (
++        tag === 'meta' && (root.getAttribute('http-equiv') || '').trim().toLowerCase() === 'refresh'
++      );
++
++      if (isDangerousTag || isDangerousMeta) {
+         root.remove();
++        root.textContent = '';
++        while (root.firstChild) {
++          root.removeChild(root.firstChild);
++        }
++        if (root.attributes) {
++          Array.from(root.attributes).forEach(attr => {
++            root.removeAttribute(attr.name);
++            if (attr.namespaceURI) {
++              try { root.removeAttributeNS(attr.namespaceURI, attr.localName); } catch (_) {}
++            }
++          });
++        }
+         return root;
+       }
+     }

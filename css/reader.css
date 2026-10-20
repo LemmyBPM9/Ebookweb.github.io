@@ -1,0 +1,347 @@
+/**
+ * css/reader.css
+ * WebReader — Reader Stage, Viewport, Sandboxed Iframe, Tap Zones & Chrome
+ * Conforms to Milestone 3 Specification & WCAG AA/AAA Guidelines.
+ */
+
+/* ==========================================================================
+   1. Reader Stage & Main Viewport
+   ========================================================================== */
+
+#reader-view,
+.reader-view {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  overflow: hidden;
+  z-index: 10;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#reader-stage,
+.reader-stage,
+#reader-viewport,
+.reader-viewport,
+#reading-stage,
+.reading-stage {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Default: Paginated mode */
+  background-color: var(--color-bg);
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+/* Scroll Mode Container */
+#reader-stage.scroll-mode,
+.reader-stage.scroll-mode,
+#reading-stage.scroll-mode,
+.reading-stage.scroll-mode,
+#reader-viewport.scroll-mode {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-color: var(--color-scrollbar, rgba(0, 0, 0, 0.2)) transparent;
+}
+
+/* ==========================================================================
+   2. Sandboxed Reading Iframe
+   ========================================================================== */
+
+iframe#reader-frame,
+iframe.reader-frame,
+#reader-stage iframe,
+.reader-stage iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background-color: transparent;
+  transition: opacity 0.15s ease-in-out;
+  flex: 1;
+}
+
+/* Zero-flicker chapter transition state */
+iframe#reader-frame.is-loading,
+iframe.reader-frame.is-loading {
+  opacity: 0.85;
+}
+
+/* In scroll mode, iframe expands dynamically to its content height */
+#reader-stage.scroll-mode iframe#reader-frame,
+.reader-stage.scroll-mode iframe.reader-frame {
+  height: auto;
+  min-height: 100%;
+  max-width: 100%;
+}
+
+/* ==========================================================================
+   3. 3-Zone Click / Tap Navigation Overlay
+   ========================================================================== */
+
+#reader-tap-zones,
+.reader-tap-zones {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  z-index: 15;
+  pointer-events: auto;
+}
+
+.tap-zone,
+.tap-zone-left,
+.tap-zone-prev {
+  width: 25%;
+  height: 100%;
+  cursor: w-resize;
+  background: transparent;
+}
+
+.tap-zone-center,
+.tap-zone-menu {
+  width: 50%;
+  height: 100%;
+  cursor: pointer;
+  background: transparent;
+}
+
+.tap-zone-right,
+.tap-zone-next {
+  width: 25%;
+  height: 100%;
+  cursor: e-resize;
+  background: transparent;
+}
+
+/* In Continuous Scroll mode, side tap zones pass through so vertical scroll is unobstructed */
+#reader-stage.scroll-mode .reader-tap-zones,
+.scroll-mode #reader-tap-zones,
+.scroll-mode .reader-tap-zones {
+  pointer-events: none;
+}
+
+#reader-stage.scroll-mode .tap-zone-center,
+#reader-stage.scroll-mode .tap-zone-menu,
+.scroll-mode .tap-zone-center,
+.scroll-mode .tap-zone-menu {
+  pointer-events: auto;
+  cursor: default;
+}
+
+/* ==========================================================================
+   4. Reader Chrome (Header, Footer, Indicators, Progress Bar)
+   ========================================================================== */
+
+#reader-header,
+.reader-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  z-index: 30;
+  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.05));
+  transform: translateY(0);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+#reader-header.is-hidden {
+  transform: translateY(-100%);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.reader-header-left,
+.reader-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reader-book-title,
+#reader-book-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: min(400px, 45vw);
+}
+
+#reader-footer,
+.reader-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 1.25rem;
+  z-index: 30;
+  box-shadow: 0 -2px 8px var(--color-shadow, rgba(0, 0, 0, 0.05));
+  transform: translateY(0);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+#reader-footer.is-hidden {
+  transform: translateY(100%);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.reader-footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.reader-chapter-title,
+#chapter-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+  font-weight: 500;
+}
+
+.reader-page-indicator,
+.page-indicator,
+#page-indicator,
+#page-info {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* Micro-line progress bar inside footer */
+.reader-progress-track,
+#reader-progress-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--color-border);
+}
+
+.reader-progress-bar,
+#reader-progress-bar,
+#progress-bar {
+  height: 100%;
+  background-color: var(--color-accent);
+  transition: width 0.2s ease;
+  width: 0%;
+}
+
+/* ==========================================================================
+   5. Accessibility & Reduced Motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  #reader-header,
+  #reader-footer,
+  .reader-header,
+  .reader-footer,
+  .reader-progress-bar,
+  #reader-progress-bar,
+  #progress-bar,
+  iframe#reader-frame,
+  iframe.reader-frame {
+    transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   6. PDF Visual Page Mode Stage & Canvas
+   ========================================================================== */
+
+#pdf-visual-stage,
+.pdf-visual-stage {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 68px 1.5rem 60px;
+  overflow-y: auto;
+  overflow-x: auto;
+  background-color: var(--color-surface);
+  z-index: 20;
+}
+
+.pdf-visual-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(100%, 660px);
+  padding: 0.5rem 0.875rem;
+  margin-bottom: 1rem;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.06));
+  font-size: 0.8125rem;
+  z-index: 25;
+}
+
+.pdf-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pdf-mode-indicator {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.pdf-page-counter,
+.pdf-zoom-label {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 3rem;
+  text-align: center;
+}
+
+.pdf-canvas-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-bottom: 1.5rem;
+}
+
+.pdf-page-canvas,
+.pdf-canvas {
+  display: block;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  max-width: 100%;
+  height: auto;
+}
+

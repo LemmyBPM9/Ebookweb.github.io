@@ -1,0 +1,52 @@
+--- js/parser/path-resolver.js
++++ js/parser/path-resolver.js
+@@ -195,7 +195,7 @@
+  * 2. Normalized path
+  * 3. URL-decoded path
+  * 4. URI-encoded path
+- * 5. Case-insensitive scan across archive keys
++ * 5. Case-insensitive and decoded scan across archive keys
+  *
+  * @param {any} zip - JSZip instance
+  * @param {string} targetPath - Target path to locate
+@@ -227,7 +227,7 @@
+     if (entry) return entry;
+   }
+ 
+-  // 5. Case-insensitive lookup
++  // 5. Case-insensitive and percent-decoded lookup across archive keys
+   const lowerNorm = norm.toLowerCase();
+   const lowerDecoded = decoded.toLowerCase();
+   const fileKeys = Object.keys(zip.files || {});
+@@ -235,8 +235,30 @@
+   for (let i = 0; i < fileKeys.length; i++) {
+     const key = fileKeys[i];
+     const lowerKey = key.toLowerCase();
+-    if (lowerKey === lowerNorm || lowerKey === lowerDecoded) {
++    const lowerDecodedKey = safeDecodeURIComponent(key).toLowerCase();
++
++    if (
++      lowerKey === lowerNorm ||
++      lowerKey === lowerDecoded ||
++      lowerDecodedKey === lowerNorm ||
++      lowerDecodedKey === lowerDecoded
++    ) {
+       return zip.files[key];
++    }
++
++    // Also support keys with Windows backslashes or leading slashes
++    if (key.includes('\\') || key.startsWith('/') || key.startsWith('./')) {
++      const normKey = normalizePath(key);
++      const lowerNormKey = normKey.toLowerCase();
++      const lowerDecodedNormKey = safeDecodeURIComponent(normKey).toLowerCase();
++      if (
++        lowerNormKey === lowerNorm ||
++        lowerNormKey === lowerDecoded ||
++        lowerDecodedNormKey === lowerNorm ||
++        lowerDecodedNormKey === lowerDecoded
++      ) {
++        return zip.files[key];
++      }
+     }
+   }
+ 

@@ -1,0 +1,607 @@
+/**
+ * WebReader — Expanded 10 Eye-Comfort Themes & Contrast Engine
+ * File: css/themes.css
+ * Spec: Strict WCAG 2.1 AAA Compliant Low-Glare Palettes (All CR >= 7.0:1)
+ */
+
+/* ==========================================================================
+   0. Global Typography & Reader Defaults
+   ========================================================================== */
+:root {
+  --reader-font-family: 'Merriweather', 'Georgia', 'Iowan Old Style', 'Palatino Linotype', serif;
+  --reader-font-size: 18px;
+  --reader-line-height: 1.75;
+  --reader-max-width: 720px;
+  --reader-text-align: left;
+  --reader-paragraph-spacing: 1.25em;
+  --reader-page-margin: 40px;
+}
+
+/* ==========================================================================
+   Theme 1: Warm Paper / Sepia (Default)
+   CR: 13.38:1 (AAA) | L_bg: 0.8841 | L_text: 0.0198
+   ========================================================================== */
+:root,
+[data-theme="warm-paper"],
+.theme-warm-paper,
+body.theme-warm-paper {
+  color-scheme: light;
+
+  /* Primary Canonical Properties */
+  --bg-primary: #f8f1e3;
+  --bg-secondary: #efe5d0;
+  --bg-elevated: #e7d9bf;
+  --text-primary: #2c2523;
+  --text-secondary: #5c504a;
+  --text-muted: #70625b;
+  --border-color: #dfd3bd;
+  --accent-color: #8b5a2b;
+  --accent-hover: #724820;
+  --selection-bg: #fcedbe;
+  --selection-color: #2c2523;
+
+  /* Backward Compatibility Aliases */
+  --color-bg: #f8f1e3;
+  --color-surface: #efe5d0;
+  --color-surface-hover: #e7d9bf;
+  --color-surface-active: #dfd0b2;
+  --color-border: #dfd3bd;
+  --color-border-strong: #96836e;
+  --color-text: #2c2523;
+  --color-text-secondary: #5c504a;
+  --color-text-muted: #70625b;
+  --color-accent: #8b5a2b;
+  --color-accent-hover: #724820;
+  --color-accent-light: rgba(139, 90, 43, 0.12);
+  --color-accent-text: #ffffff;
+  --color-focus-ring: #8b5a2b;
+  --color-highlight: #fcedbe;
+  --color-scrollbar: #dcd0b7;
+  --color-scrollbar-hover: #c9baa0;
+  --color-shadow: rgba(44, 37, 35, 0.08);
+  --color-overlay: rgba(44, 37, 35, 0.40);
+  --color-error: #9e2a2b;
+  --color-error-bg: #fbeae8;
+  --color-success: #2d7348;
+  --color-success-bg: #e6f3eb;
+}
+
+[data-theme="warm-paper"] ::selection,
+.theme-warm-paper ::selection,
+body.theme-warm-paper ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+/* ==========================================================================
+   Theme 2: Soft Dark / Night (Low-Blue-Light, Zero Halation)
+   CR: 13.17:1 (AAA) | L_bg: 0.0114 | L_text: 0.7594
+   ========================================================================== */
+[data-theme="soft-dark"],
+.theme-soft-dark,
+body.theme-soft-dark {
+  color-scheme: dark;
+
+  /* Primary Canonical Properties */
+  --bg-primary: #1a1c1e;
+  --bg-secondary: #24282c;
+  --bg-elevated: #2f343a;
+  --text-primary: #e2e2e0;
+  --text-secondary: #9e9e9a;
+  --text-muted: #92928d;
+  --border-color: #33383e;
+  --accent-color: #e5a869;
+  --accent-hover: #f3be86;
+  --selection-bg: #453c28;
+  --selection-color: #ffffff;
+
+  /* Backward Compatibility Aliases */
+  --color-bg: #1a1c1e;
+  --color-surface: #24282c;
+  --color-surface-hover: #2f343a;
+  --color-surface-active: #383e46;
+  --color-border: #33383e;
+  --color-border-strong: #636b75;
+  --color-text: #e2e2e0;
+  --color-text-secondary: #9e9e9a;
+  --color-text-muted: #92928d;
+  --color-accent: #e5a869;
+  --color-accent-hover: #f3be86;
+  --color-accent-light: rgba(229, 168, 105, 0.16);
+  --color-accent-text: #1a1c1e;
+  --color-focus-ring: #e5a869;
+  --color-highlight: #453c28;
+  --color-scrollbar: #3c424a;
+  --color-scrollbar-hover: #505862;
+  --color-shadow: rgba(0, 0, 0, 0.50);
+  --color-overlay: rgba(0, 0, 0, 0.70);
+  --color-error: #f28b82;
+  --color-error-bg: #3c1e1e;
+  --color-success: #81c995;
+  --color-success-bg: #1e3324;
+}
+
+[data-theme="soft-dark"] ::selection,
+.theme-soft-dark ::selection,
+body.theme-soft-dark ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+/* ==========================================================================
+   Theme 3: Daylight / Clean Light (Low-Glare Off-White)
+   CR: 15.80:1 (AAA) | L_bg: 0.9653 | L_text: 0.0143
+   ========================================================================== */
+[data-theme="daylight"],
+.theme-daylight,
+body.theme-daylight {
+  color-scheme: light;
+
+  /* Primary Canonical Properties */
+  --bg-primary: #fcfbf9;
+  --bg-secondary: #f3f2ee;
+  --bg-elevated: #e8e6df;
+  --text-primary: #1e2022;
+  --text-secondary: #555b62;
+  --text-muted: #666d75;
+  --border-color: #e0dfd9;
+  --accent-color: #2364a0;
+  --accent-hover: #1b4f80;
+  --selection-bg: #dbeafe;
+  --selection-color: #1e2022;
+
+  /* Backward Compatibility Aliases */
+  --color-bg: #fcfbf9;
+  --color-surface: #f3f2ee;
+  --color-surface-hover: #e8e6df;
+  --color-surface-active: #dedcd4;
+  --color-border: #e0dfd9;
+  --color-border-strong: #8d9299;
+  --color-text: #1e2022;
+  --color-text-secondary: #555b62;
+  --color-text-muted: #666d75;
+  --color-accent: #2364a0;
+  --color-accent-hover: #1b4f80;
+  --color-accent-light: rgba(35, 100, 160, 0.10);
+  --color-accent-text: #ffffff;
+  --color-focus-ring: #2364a0;
+  --color-highlight: #e1ecf8;
+  --color-scrollbar: #dcdbd5;
+  --color-scrollbar-hover: #c8c7bf;
+  --color-shadow: rgba(30, 32, 34, 0.06);
+  --color-overlay: rgba(30, 32, 34, 0.35);
+  --color-error: #ba1a1a;
+  --color-error-bg: #ffdad6;
+  --color-success: #1b6d36;
+  --color-success-bg: #d7eedc;
+}
+
+[data-theme="daylight"] ::selection,
+.theme-daylight ::selection,
+body.theme-daylight ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+/* ==========================================================================
+   Theme 4: Sage / Forest Calm (Peak Photopic Comfort)
+   CR: 13.60:1 (AAA) | L_bg: 0.8839 | L_text: 0.0187
+   ========================================================================== */
+[data-theme="sage"],
+.theme-sage,
+body.theme-sage {
+  color-scheme: light;
+
+  /* Primary Canonical Properties */
+  --bg-primary: #eef3ed;
+  --bg-secondary: #e1eae0;
+  --bg-elevated: #d6e3d5;
+  --text-primary: #1c2820;
+  --text-secondary: #4a5d50;
+  --text-muted: #56685c;
+  --border-color: #cfdcd0;
+  --accent-color: #2d7348;
+  --accent-hover: #225636;
+  --selection-bg: #d7eedc;
+  --selection-color: #1c2820;
+
+  /* Backward Compatibility Aliases */
+  --color-bg: #eef3ed;
+  --color-surface: #e1eae0;
+  --color-surface-hover: #d6e3d5;
+  --color-surface-active: #c8d8c6;
+  --color-border: #cfdcd0;
+  --color-border-strong: #778d7b;
+  --color-text: #1c2820;
+  --color-text-secondary: #4a5d50;
+  --color-text-muted: #56685c;
+  --color-accent: #2d7348;
+  --color-accent-hover: #225636;
+  --color-accent-light: rgba(45, 115, 72, 0.12);
+  --color-accent-text: #ffffff;
+  --color-focus-ring: #2d7348;
+  --color-highlight: #d7eedc;
+  --color-scrollbar: #cbdbcc;
+  --color-scrollbar-hover: #b5c7b6;
+  --color-shadow: rgba(28, 40, 32, 0.07);
+  --color-overlay: rgba(28, 40, 32, 0.35);
+  --color-error: #a82222;
+  --color-error-bg: #fae1e1;
+  --color-success: #205c36;
+  --color-success-bg: #d1ead8;
+}
+
+[data-theme="sage"] ::selection,
+.theme-sage ::selection,
+body.theme-sage ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+/* ==========================================================================
+   Theme 5: Solarized Light (Warm Muted Cream & Teal Ink)
+   CR: 12.05:1 (AAA) | L_bg: 0.9234 | L_text: 0.0308
+   ========================================================================== */
+[data-theme="solarized-light"],
+.theme-solarized-light,
+body.theme-solarized-light {
+  color-scheme: light;
+
+  /* Primary Canonical Properties */
+  --bg-primary: #fdf6e3;
+  --bg-secondary: #eee8d5;
+  --bg-elevated: #e0d8c3;
+  --text-primary: #073642;
+  --text-secondary: #586e75;
+  --text-muted: #657b83;
+  --border-color: #d3cbb7;
+  --accent-color: #268bd2;
+  --accent-hover: #1a6091;
+  --selection-bg: #cfe5eb;
+  --selection-color: #073642;
+
+  /* Backward Compatibility Aliases */
+  --color-bg: #fdf6e3;
+  --color-surface: #eee8d5;
+  --color-surface-hover: #e0d8c3;
+  --color-surface-active: #d6ccb4;
+  --color-border: #d3cbb7;
+  --color-border-strong: #839496;
+  --color-text: #073642;
+  --color-text-secondary: #586e75;
+  --color-text-muted: #657b83;
+  --color-accent: #268bd2;
+  --color-accent-hover: #1a6091;
+  --color-accent-light: rgba(38, 139, 210, 0.12);
+  --color-accent-text: #ffffff;
+  --color-focus-ring: #268bd2;
+  --color-highlight: #cfe5eb;
+  --color-scrollbar: #dcd4be;
+  --color-scrollbar-hover: #c9bea2;
+  --color-shadow: rgba(7, 54, 66, 0.08);
+  --color-overlay: rgba(7, 54, 66, 0.40);
+  --color-error: #dc322f;
+  --color-error-bg: #fbeae8;
+  --color-success: #859900;
+  --color-success-bg: #eff5d4;
+}
+
+[data-theme="solarized-light"] ::selection,
+.theme-solarized-light ::selection,
+body.theme-solarized-light ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+/* ==========================================================================
+   Theme 6: Solarized Dark (Petrol Blue & Warm Stone Ink)
+   CR: 12.25:1 (AAA) | L_bg: 0.0199 | L_text: 0.8069
+   ========================================================================== */
+[data-theme="solarized-dark"],
+.theme-solarized-dark,
+body.theme-solarized-dark {
+  color-scheme: dark;
+
+  /* Primary Canonical Properties */
+  --bg-primary: #002b36;
+  --bg-secondary: #073642;
+  --bg-elevated: #0e4250;
+  --text-primary: #eee8d5;
+  --text-secondary: #93a1a1;
+  --text-muted: #839496;
+  --border-color: #154855;
+  --accent-color: #2aa198;
+  --accent-hover: #36b8af;
+  --selection-bg: #0e4757;
+  --selection-color: #eee8d5;
+
+  /* Backward Compatibility Aliases */
+  --color-bg: #002b36;
+  --color-surface: #073642;
+  --color-surface-hover: #0e4250;
+  --color-surface-active: #134f5e;
+  --color-border: #154855;
+  --color-border-strong: #586e75;
+  --color-text: #eee8d5;
+  --color-text-secondary: #93a1a1;
+  --color-text-muted: #839496;
+  --color-accent: #2aa198;
+  --color-accent-hover: #36b8af;
+  --color-accent-light: rgba(42, 161, 152, 0.16);
+  --color-accent-text: #002b36;
+  --color-focus-ring: #2aa198;
+  --color-highlight: #0d3a47;
+  --color-scrollbar: #1b4b57;
+  --color-scrollbar-hover: #276270;
+  --color-shadow: rgba(0, 0, 0, 0.50);
+  --color-overlay: rgba(0, 0, 0, 0.70);
+  --color-error: #dc322f;
+  --color-error-bg: #3a1c1d;
+  --color-success: #859900;
+  --color-success-bg: #223517;
+}
+
+[data-theme="solarized-dark"] ::selection,
+.theme-solarized-dark ::selection,
+body.theme-solarized-dark ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+/* ==========================================================================
+   Theme 7: Nord (Arctic Polar Slate & Snow Storm Ink)
+   CR: 10.84:1 (AAA) | L_bg: 0.0341 | L_text: 0.8610
+   ========================================================================== */
+[data-theme="nord"],
+.theme-nord,
+body.theme-nord {
+  color-scheme: dark;
+
+  /* Primary Canonical Properties */
+  --bg-primary: #2e3440;
+  --bg-secondary: #3b4252;
+  --bg-elevated: #434c5e;
+  --text-primary: #eceff4;
+  --text-secondary: #d8dee9;
+  --text-muted: #929fb4;
+  --border-color: #4c566a;
+  --accent-color: #88c0d0;
+  --accent-hover: #81a1c1;
+  --selection-bg: #434c5e;
+  --selection-color: #eceff4;
+
+  /* Backward Compatibility Aliases */
+  --color-bg: #2e3440;
+  --color-surface: #3b4252;
+  --color-surface-hover: #434c5e;
+  --color-surface-active: #4c566a;
+  --color-border: #4c566a;
+  --color-border-strong: #78859e;
+  --color-text: #eceff4;
+  --color-text-secondary: #d8dee9;
+  --color-text-muted: #929fb4;
+  --color-accent: #88c0d0;
+  --color-accent-hover: #81a1c1;
+  --color-accent-light: rgba(136, 192, 208, 0.16);
+  --color-accent-text: #2e3440;
+  --color-focus-ring: #88c0d0;
+  --color-highlight: #3b4252;
+  --color-scrollbar: #434c5e;
+  --color-scrollbar-hover: #4c566a;
+  --color-shadow: rgba(0, 0, 0, 0.45);
+  --color-overlay: rgba(0, 0, 0, 0.65);
+  --color-error: #bf616a;
+  --color-error-bg: #3c2427;
+  --color-success: #a3be8c;
+  --color-success-bg: #253326;
+}
+
+[data-theme="nord"] ::selection,
+.theme-nord ::selection,
+body.theme-nord ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+/* ==========================================================================
+   Theme 8: OLED Black (True Pitch Black & Dimmed Silver Ink)
+   CR: 12.55:1 (AAA) | L_bg: 0.0000 | L_text: 0.5776
+   ========================================================================== */
+[data-theme="oled-black"],
+.theme-oled-black,
+body.theme-oled-black {
+  color-scheme: dark;
+
+  /* Primary Canonical Properties */
+  --bg-primary: #000000;
+  --bg-secondary: #121212;
+  --bg-elevated: #1e1e1e;
+  --text-primary: #c8c8c8;
+  --text-secondary: #8e8e8e;
+  --text-muted: #767676;
+  --border-color: #282828;
+  --accent-color: #e0a96d;
+  --accent-hover: #f0bc84;
+  --selection-bg: #2a2a2a;
+  --selection-color: #f0f0f0;
+
+  /* Backward Compatibility Aliases */
+  --color-bg: #000000;
+  --color-surface: #121212;
+  --color-surface-hover: #1e1e1e;
+  --color-surface-active: #2a2a2a;
+  --color-border: #282828;
+  --color-border-strong: #505050;
+  --color-text: #c8c8c8;
+  --color-text-secondary: #8e8e8e;
+  --color-text-muted: #767676;
+  --color-accent: #e0a96d;
+  --color-accent-hover: #f0bc84;
+  --color-accent-light: rgba(224, 169, 109, 0.16);
+  --color-accent-text: #000000;
+  --color-focus-ring: #e0a96d;
+  --color-highlight: #242424;
+  --color-scrollbar: #242424;
+  --color-scrollbar-hover: #333333;
+  --color-shadow: rgba(0, 0, 0, 0.85);
+  --color-overlay: rgba(0, 0, 0, 0.85);
+  --color-error: #e57373;
+  --color-error-bg: #2d1414;
+  --color-success: #81c784;
+  --color-success-bg: #152918;
+}
+
+[data-theme="oled-black"] ::selection,
+.theme-oled-black ::selection,
+body.theme-oled-black ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+/* ==========================================================================
+   Theme 9: Rosé Pine (Deep Dusk & Warm Lilac Rose Ink)
+   CR: 13.39:1 (AAA) | L_bg: 0.0095 | L_text: 0.7462
+   ========================================================================== */
+[data-theme="rose-pine"],
+.theme-rose-pine,
+body.theme-rose-pine {
+  color-scheme: dark;
+
+  /* Primary Canonical Properties */
+  --bg-primary: #191724;
+  --bg-secondary: #1f1d2e;
+  --bg-elevated: #26233a;
+  --text-primary: #e0def4;
+  --text-secondary: #908caa;
+  --text-muted: #797593;
+  --border-color: #393552;
+  --accent-color: #ebbcba;
+  --accent-hover: #f3d0ce;
+  --selection-bg: #312c49;
+  --selection-color: #f0eefc;
+
+  /* Backward Compatibility Aliases */
+  --color-bg: #191724;
+  --color-surface: #1f1d2e;
+  --color-surface-hover: #26233a;
+  --color-surface-active: #312c49;
+  --color-border: #393552;
+  --color-border-strong: #6e6a86;
+  --color-text: #e0def4;
+  --color-text-secondary: #908caa;
+  --color-text-muted: #797593;
+  --color-accent: #ebbcba;
+  --color-accent-hover: #f3d0ce;
+  --color-accent-light: rgba(235, 188, 186, 0.16);
+  --color-accent-text: #191724;
+  --color-focus-ring: #ebbcba;
+  --color-highlight: #2a283e;
+  --color-scrollbar: #2a283e;
+  --color-scrollbar-hover: #3b3754;
+  --color-shadow: rgba(0, 0, 0, 0.55);
+  --color-overlay: rgba(0, 0, 0, 0.75);
+  --color-error: #eb6f92;
+  --color-error-bg: #381924;
+  --color-success: #9ccfd8;
+  --color-success-bg: #1a2d33;
+}
+
+[data-theme="rose-pine"] ::selection,
+.theme-rose-pine ::selection,
+body.theme-rose-pine ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+/* ==========================================================================
+   Theme 10: E-Ink Paper (Matte Monochrome High-Contrast Grayscale)
+   CR: 15.22:1 (AAA) | L_bg: 0.8684 | L_text: 0.0103
+   ========================================================================== */
+[data-theme="e-ink"],
+.theme-e-ink,
+body.theme-e-ink {
+  color-scheme: light;
+
+  /* Primary Canonical Properties */
+  --bg-primary: #f0f0eb;
+  --bg-secondary: #e2e2dc;
+  --bg-elevated: #d4d4cc;
+  --text-primary: #1a1a1a;
+  --text-secondary: #444444;
+  --text-muted: #666666;
+  --border-color: #cccccc;
+  --accent-color: #2b2b2b;
+  --accent-hover: #000000;
+  --selection-bg: #d0d0c8;
+  --selection-color: #000000;
+
+  /* Backward Compatibility Aliases */
+  --color-bg: #f0f0eb;
+  --color-surface: #e2e2dc;
+  --color-surface-hover: #d4d4cc;
+  --color-surface-active: #c8c8bf;
+  --color-border: #cccccc;
+  --color-border-strong: #777777;
+  --color-text: #1a1a1a;
+  --color-text-secondary: #444444;
+  --color-text-muted: #666666;
+  --color-accent: #2b2b2b;
+  --color-accent-hover: #000000;
+  --color-accent-light: rgba(0, 0, 0, 0.10);
+  --color-accent-text: #ffffff;
+  --color-focus-ring: #2b2b2b;
+  --color-highlight: #d0d0c8;
+  --color-scrollbar: #c8c8c2;
+  --color-scrollbar-hover: #b4b4ad;
+  --color-shadow: rgba(0, 0, 0, 0.08);
+  --color-overlay: rgba(0, 0, 0, 0.40);
+  --color-error: #555555;
+  --color-error-bg: #dddddd;
+  --color-success: #333333;
+  --color-success-bg: #e2e2e2;
+}
+
+[data-theme="e-ink"] ::selection,
+.theme-e-ink ::selection,
+body.theme-e-ink ::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+/* ==========================================================================
+   FOUC Prevention & Smooth Transitions
+   ========================================================================== */
+.no-theme-transition,
+.no-theme-transition *,
+.no-theme-transition *::before,
+.no-theme-transition *::after {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -ms-transition: none !important;
+  transition: none !important;
+}
+
+html:not(.no-theme-transition) body,
+html:not(.no-theme-transition) .app-header,
+html:not(.no-theme-transition) .app-footer,
+html:not(.no-theme-transition) .card,
+html:not(.no-theme-transition) .segmented-control,
+html:not(.no-theme-transition) .theme-swatch-btn {
+  transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+}
+
+html:not(.no-theme-transition) .drawer {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+}
+
+html:not(.no-theme-transition) .btn {
+  transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.1s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

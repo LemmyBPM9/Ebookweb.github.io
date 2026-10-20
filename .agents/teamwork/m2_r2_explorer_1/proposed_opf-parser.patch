@@ -1,0 +1,22 @@
+--- js/parser/opf-parser.js
++++ js/parser/opf-parser.js
+@@ -52,7 +52,8 @@
+   for (let i = 0; i < children.length; i++) {
+     const node = children[i];
+     if (node.nodeType === 1) { // ELEMENT_NODE
+-      const nodeLocal = (node.localName || node.nodeName.split(':').pop() || '').toLowerCase();
++      const rawName = node.localName || node.nodeName || '';
++      const nodeLocal = (rawName.split(':').pop() || '').toLowerCase();
+       if (nodeLocal === localName.toLowerCase()) {
+         const text = node.textContent ? node.textContent.trim() : '';
+         if (text) return text;
+@@ -89,7 +90,8 @@
+     for (let i = 0; i < children.length; i++) {
+       const node = children[i];
+       if (node.nodeType === 1) {
+-        const nodeLocal = (node.localName || node.nodeName.split(':').pop() || '').toLowerCase();
++        const rawName = node.localName || node.nodeName || '';
++        const nodeLocal = (rawName.split(':').pop() || '').toLowerCase();
+         if (nodeLocal === localName.toLowerCase()) {
+           const text = node.textContent ? node.textContent.trim() : '';
+           if (text && !results.includes(text)) {

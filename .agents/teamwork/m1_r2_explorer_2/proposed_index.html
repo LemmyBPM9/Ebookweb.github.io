@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebReader — Eye-Friendly Client-Side EPUB Reader</title>
+  
+  <!-- Synchronous FOUC-Free Theme Bootstrap -->
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('webreader_theme') || 'warm-paper';
+        var allowed = ['warm-paper', 'soft-dark', 'daylight', 'sage'];
+        if (allowed.indexOf(theme) === -1) theme = 'warm-paper';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.classList.add('no-theme-transition');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'warm-paper');
+      }
+
+      // Remove transition suppression once initial DOM paint is complete
+      function removeNoTransition() {
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            document.documentElement.classList.remove('no-theme-transition');
+          });
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', removeNoTransition);
+      } else {
+        removeNoTransition();
+      }
+    })();
+  </script>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/main.css">
+
+  <!-- Standalone Vendor Scripts (Zero Build Step) -->
+  <script src="vendor/jszip.min.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+</html>

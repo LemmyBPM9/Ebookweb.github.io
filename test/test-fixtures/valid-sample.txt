@@ -1,0 +1,17 @@
+Chapter 1: The Sanctuary of Words
+
+Reading is an intimate dialogue between the mind of the author and the sanctuary of the reader’s consciousness. When we open a book, we step into a realm where the outside world recedes, leaving only the rhythm of thought and the architecture of language.
+
+In the digital age, this sanctuary is frequently compromised. The luminous screens of computers and smartphones bombard our eyes with intense light, erratic contrast, and visual distraction. The physical book, with its unreflective cream paper and steady charcoal ink, remains the gold standard.
+
+Chapter 2: Eyes in Balance
+
+The human eye evolved under the soft, dynamic light of the sun filtered through atmosphere and foliage. The blue sky provides ambient scattered illumination, while earthy surfaces reflect warm, subdued spectra.
+
+Modern emissive displays emit sharp, concentrated photons directly into the pupil. When a dark room is illuminated by a stark white window, the ciliary muscles remain clenched to restrict light influx, leading to ocular fatigue.
+
+Chapter 3: Typographic Harmony
+
+Typography is the clothing of thought. A serif font like Georgia or Merriweather provides subtle horizontal anchors along the baseline, aiding horizontal saccades across dense prose.
+
+By empowering the reader to adjust font scale, line spacing, and margin width dynamically, WebReader ensures that readability adapts to the human, not the other way around.

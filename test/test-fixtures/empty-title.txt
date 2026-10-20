@@ -1,0 +1,5 @@
+   
+
+This is a plain text file without an explicit Chapter heading or title on the first line.
+
+It tests the fallback to filename or default title.

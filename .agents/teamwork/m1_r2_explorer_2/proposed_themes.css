@@ -1,0 +1,220 @@
+/**
+ * WebReader — Eye-Comfort Themes & Color Custom Properties
+ * File: css/themes.css
+ * Spec: WCAG 2.1 AA / AAA compliant low-glare palettes
+ */
+
+/* ==========================================================================
+   Base Theme Variables & Default: Warm Paper (Sepia)
+   ========================================================================== */
+:root,
+[data-theme="warm-paper"] {
+  /* System color scheme integration for native form controls and scrollbars */
+  color-scheme: light;
+
+  /* Surface & Background */
+  --color-bg: #f8f1e3;
+  --color-surface: #efe5d0;
+  --color-surface-hover: #e7d9bf;
+  --color-surface-active: #dfd0b2;
+
+  /* Borders & Dividers */
+  --color-border: #dfd3bd;
+  --color-border-strong: #96836e; /* Passes 3:1 non-text UI contrast */
+
+  /* Text & Typography */
+  --color-text: #2c2523;           /* 13.38:1 contrast on BG (AAA) */
+  --color-text-secondary: #5c504a; /* 6.92:1 contrast on BG (AA) */
+  --color-text-muted: #70625b;     /* 5.21:1 on BG, 4.68:1 on Surface (AA) */
+
+  /* Accent & Interactive */
+  --color-accent: #8b5a2b;         /* Warm chestnut/leather */
+  --color-accent-hover: #724820;
+  --color-accent-light: rgba(139, 90, 43, 0.12);
+  --color-accent-text: #ffffff;    /* 5.84:1 contrast on accent (AA) */
+  --color-focus-ring: #8b5a2b;
+
+  /* Utility & Feedback */
+  --color-highlight: #fcedbe;
+  --color-scrollbar: #dcd0b7;
+  --color-scrollbar-hover: #c9baa0;
+  --color-shadow: rgba(44, 37, 35, 0.08);
+  --color-overlay: rgba(44, 37, 35, 0.40);
+  --color-error: #9e2a2b;
+  --color-error-bg: #fbeae8;
+  --color-success: #2d7348;
+  --color-success-bg: #e6f3eb;
+
+  /* Reader Typography Defaults */
+  --reader-font-family: 'Merriweather', 'Georgia', 'Iowan Old Style', 'Palatino Linotype', serif;
+  --reader-font-size: 18px;
+  --reader-line-height: 1.75;
+  --reader-max-width: 720px;
+  --reader-text-align: left;
+  --reader-paragraph-spacing: 1.25em;
+  --reader-page-margin: 40px;
+}
+
+/* ==========================================================================
+   Theme 2: Soft Dark / Night (Low-Blue-Light, Zero Halation)
+   ========================================================================== */
+[data-theme="soft-dark"] {
+  color-scheme: dark;
+
+  /* Surface & Background */
+  --color-bg: #1a1c1e;
+  --color-surface: #24282c;
+  --color-surface-hover: #2f343a;
+  --color-surface-active: #383e46;
+
+  /* Borders & Dividers */
+  --color-border: #33383e;
+  --color-border-strong: #636b75; /* Passes 3:1 non-text UI contrast */
+
+  /* Text & Typography */
+  --color-text: #e2e2e0;           /* 13.17:1 contrast on BG (AAA) */
+  --color-text-secondary: #9e9e9a; /* 6.36:1 contrast on BG (AA) */
+  --color-text-muted: #92928d;     /* 5.47:1 on BG, 4.75:1 on Surface (AA) */
+
+  /* Accent & Interactive */
+  --color-accent: #e5a869;         /* Candlelight amber gold */
+  --color-accent-hover: #f3be86;
+  --color-accent-light: rgba(229, 168, 105, 0.16);
+  --color-accent-text: #1a1c1e;    /* 8.25:1 contrast on accent (AAA) */
+  --color-focus-ring: #e5a869;
+
+  /* Utility & Feedback */
+  --color-highlight: #453c28;
+  --color-scrollbar: #3c424a;
+  --color-scrollbar-hover: #505862;
+  --color-shadow: rgba(0, 0, 0, 0.50);
+  --color-overlay: rgba(0, 0, 0, 0.70);
+  --color-error: #f28b82;
+  --color-error-bg: #3c1e1e;
+  --color-success: #81c995;
+  --color-success-bg: #1e3324;
+}
+
+/* ==========================================================================
+   Theme 3: Daylight / Clean Light (Low-Glare Off-White)
+   ========================================================================== */
+[data-theme="daylight"] {
+  color-scheme: light;
+
+  /* Surface & Background */
+  --color-bg: #fcfbf9;
+  --color-surface: #f3f2ee;
+  --color-surface-hover: #e8e6df;
+  --color-surface-active: #dedcd4;
+
+  /* Borders & Dividers */
+  --color-border: #e0dfd9;
+  --color-border-strong: #8d9299; /* Passes 3:1 non-text UI contrast */
+
+  /* Text & Typography */
+  --color-text: #1e2022;           /* 15.80:1 contrast on BG (AAA) */
+  --color-text-secondary: #555b62; /* 6.64:1 contrast on BG (AA) */
+  --color-text-muted: #666d75;     /* 5.06:1 on BG, 4.68:1 on Surface (AA) */
+
+  /* Accent & Interactive */
+  --color-accent: #2364a0;         /* Lapis blue */
+  --color-accent-hover: #1b4f80;
+  --color-accent-light: rgba(35, 100, 160, 0.10);
+  --color-accent-text: #ffffff;    /* 6.17:1 contrast on accent (AA) */
+  --color-focus-ring: #2364a0;
+
+  /* Utility & Feedback */
+  --color-highlight: #e1ecf8;
+  --color-scrollbar: #dcdbd5;
+  --color-scrollbar-hover: #c8c7bf;
+  --color-shadow: rgba(30, 32, 34, 0.06);
+  --color-overlay: rgba(30, 32, 34, 0.35);
+  --color-error: #ba1a1a;
+  --color-error-bg: #ffdad6;
+  --color-success: #1b6d36;
+  --color-success-bg: #d7eedc;
+}
+
+/* ==========================================================================
+   Theme 4: Sage / Forest Calm (Peak Photopic Comfort)
+   ========================================================================== */
+[data-theme="sage"] {
+  color-scheme: light;
+
+  /* Surface & Background */
+  --color-bg: #eef3ed;
+  --color-surface: #e1eae0;
+  --color-surface-hover: #d6e3d5;
+  --color-surface-active: #c8d8c6;
+
+  /* Borders & Dividers */
+  --color-border: #cfdcd0;
+  --color-border-strong: #778d7b; /* Passes 3:1 non-text UI contrast */
+
+  /* Text & Typography */
+  --color-text: #1c2820;           /* 13.60:1 contrast on BG (AAA) */
+  --color-text-secondary: #4a5d50; /* 6.28:1 contrast on BG (AA) */
+  --color-text-muted: #56685c;     /* 5.29:1 on BG, 4.83:1 on Surface (AA) */
+
+  /* Accent & Interactive */
+  --color-accent: #2d7348;         /* Pine green */
+  --color-accent-hover: #225636;
+  --color-accent-light: rgba(45, 115, 72, 0.12);
+  --color-accent-text: #ffffff;    /* 5.74:1 contrast on accent (AA) */
+  --color-focus-ring: #2d7348;
+
+  /* Utility & Feedback */
+  --color-highlight: #d7eedc;
+  --color-scrollbar: #cbdbcc;
+  --color-scrollbar-hover: #b5c7b6;
+  --color-shadow: rgba(28, 40, 32, 0.07);
+  --color-overlay: rgba(28, 40, 32, 0.35);
+  --color-error: #a82222;
+  --color-error-bg: #fae1e1;
+  --color-success: #205c36;
+  --color-success-bg: #d1ead8;
+}
+
+/* ==========================================================================
+   FOUC Prevention & Smooth Transitions
+   ========================================================================== */
+
+/* Explicitly suppress all transitions during initial boot to prevent FOUC */
+.no-theme-transition,
+.no-theme-transition *,
+.no-theme-transition *::before,
+.no-theme-transition *::after {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -ms-transition: none !important;
+  transition: none !important;
+}
+
+/* Apply calm transitions when user toggles themes, but suppress during initial boot */
+html:not(.no-theme-transition) body,
+html:not(.no-theme-transition) .app-header,
+html:not(.no-theme-transition) .app-footer,
+html:not(.no-theme-transition) .card,
+html:not(.no-theme-transition) .segmented-control,
+html:not(.no-theme-transition) .theme-swatch-btn {
+  transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+}
+
+/* Preserve drawer transform while adding smooth theme color transition */
+html:not(.no-theme-transition) .drawer {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+}
+
+/* Preserve button active press transform while adding smooth theme color transition */
+html:not(.no-theme-transition) .btn {
+  transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.1s ease;
+}
+
+/* Disable transitions if user requested reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -1,0 +1,31 @@
+--- js/parser/asset-extractor.js	2026-10-16 23:48:17
++++ .agents/teamwork/m2_r2_explorer_3/proposed_asset-extractor.js	2026-10-17 00:06:19
+@@ -92,18 +92,24 @@
+       scripts[i].remove();
+     }
+ 
+-    // 2. Remove dangerous elements
+-    const dangerousTags = root.querySelectorAll('meta[http-equiv="refresh" i], object, embed, applet, base');
++    // 2. Remove dangerous elements (meta refresh, object, embed, applet, base, iframe, frame, frameset)
++    const dangerousTags = root.querySelectorAll('meta[http-equiv="refresh" i], object, embed, applet, base, iframe, frame, frameset');
+     for (let i = 0; i < dangerousTags.length; i++) {
+       dangerousTags[i].remove();
+     }
+ 
+-    // 3. Neutralize <form> elements
++    // 3. Neutralize <form> elements and form submission controls
+     const forms = root.querySelectorAll('form');
+     for (let i = 0; i < forms.length; i++) {
+       forms[i].removeAttribute('action');
+       forms[i].removeAttribute('method');
+-      forms[i].setAttribute('onsubmit', 'return false;');
++      forms[i].removeAttribute('target');
++    }
++    const formControls = root.querySelectorAll('button[formaction], input[formaction]');
++    for (let i = 0; i < formControls.length; i++) {
++      formControls[i].removeAttribute('formaction');
++      formControls[i].removeAttribute('formmethod');
++      formControls[i].removeAttribute('formtarget');
+     }
+ 
+     // 4. Strip inline event handlers (on*) and dangerous URI schemes

@@ -1,0 +1,20 @@
+{
+  "name": "webreader",
+  "version": "2.0.0",
+  "description": "Minimal, modern, eye-friendly client-side multi-format reader",
+  "scripts": {
+    "test": "node test/e2e.test.js",
+    "test:upgrade": "node test/e2e_upgrade.test.js",
+    "test:upgrade:tier0": "node test/e2e_upgrade.test.js --tier=0",
+    "test:upgrade:tier1": "node test/e2e_upgrade.test.js --tier=1",
+    "test:upgrade:tier2": "node test/e2e_upgrade.test.js --tier=2",
+    "test:upgrade:tier3": "node test/e2e_upgrade.test.js --tier=3",
+    "test:upgrade:tier4": "node test/e2e_upgrade.test.js --tier=4",
+    "test:storage": "node test/challenger_storage.test.js",
+    "test:security": "node test/challenger_m2_r2_adversarial.js",
+    "generate:fixtures": "node test/test-fixtures/generate-fixtures.js"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.14.0"
+  }
+}

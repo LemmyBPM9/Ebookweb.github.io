@@ -1,0 +1,317 @@
+--- js/parser/opf-parser.js	2026-10-16 23:46:52
++++ .agents/teamwork/m2_r2_explorer_2/proposed_opf-parser.js	2026-10-17 00:09:18
+@@ -3,6 +3,10 @@
+  * OCF container.xml and OPF package document parser.
+  * Extracts Dublin Core metadata, manifest items, spine reading order,
+  * and executes the 4-step cover image resolution cascade.
++ *
++ * Remediated in Milestone 2, Iteration 2:
++ * Robust XML namespace prefix stripping across strict XML (application/xml),
++ * XHTML, and HTML5 DOMParser fallback (text/html).
+  */
+ 
+ import { PathResolver } from './path-resolver.js';
+@@ -23,12 +27,105 @@
+     mt === 'text/xml+svg' ||
+     /\.(jpe?g|png|gif|svg|webp|avif|bmp)$/i.test(href)
+   );
++}
++
++/**
++ * Extracts normalized lowercase local element name, cleanly removing any XML namespace prefix.
++ * Handles strict XML (node.localName is unprefixed), XHTML, and HTML5 DOMParser fallback
++ * (where unknown prefixed elements like <dc:title> receive node.localName === 'dc:title').
++ *
++ * @param {Element|Node} node
++ * @returns {string} Lowercase unprefixed local name (e.g. 'title')
++ */
++export function getNodeLocalName(node) {
++  if (!node) return '';
++  const rawName = node.localName || node.nodeName || '';
++  return (rawName.split(':').pop() || '').toLowerCase();
++}
++
++/**
++ * Locates the first descendant element matching the target localName (case-insensitive, prefix-tolerant).
++ * Seamless across XML, XHTML, and HTML5 fallback documents.
++ *
++ * @param {Element|Document} root
++ * @param {string} targetLocal
++ * @returns {Element|null}
++ */
++export function findElementByLocal(root, targetLocal) {
++  if (!root) return null;
++  const target = (targetLocal || '').toLowerCase();
++
++  // 1. Try native querySelector
++  try {
++    const el = root.querySelector(target);
++    if (el) return el;
++  } catch (_) {}
++
++  // 2. Try getElementsByTagNameNS with wildcard namespace
++  if (typeof root.getElementsByTagNameNS === 'function') {
++    const els = root.getElementsByTagNameNS('*', target);
++    if (els && els.length > 0) return els[0];
++  }
++
++  // 3. Fallback: inspect all elements with prefix splitting
++  if (typeof root.getElementsByTagName === 'function') {
++    const all = root.getElementsByTagName('*');
++    for (let i = 0; i < all.length; i++) {
++      if (getNodeLocalName(all[i]) === target) {
++        return all[i];
++      }
++    }
++  }
++
++  return null;
++}
++
++/**
++ * Locates all descendant elements matching the target localName (case-insensitive, prefix-tolerant).
++ *
++ * @param {Element|Document} root
++ * @param {string} targetLocal
++ * @returns {Element[]}
++ */
++export function findElementsByLocal(root, targetLocal) {
++  if (!root) return [];
++  const target = (targetLocal || '').toLowerCase();
++
++  // 1. If native querySelectorAll finds elements, return them
++  try {
++    const qsa = root.querySelectorAll(target);
++    if (qsa && qsa.length > 0) {
++      return Array.from(qsa);
++    }
++  } catch (_) {}
++
++  // 2. If getElementsByTagNameNS finds elements, return them
++  if (typeof root.getElementsByTagNameNS === 'function') {
++    const els = root.getElementsByTagNameNS('*', target);
++    if (els && els.length > 0) {
++      return Array.from(els);
++    }
++  }
++
++  // 3. Fallback: filter all elements with prefix splitting
++  if (typeof root.getElementsByTagName === 'function') {
++    const all = root.getElementsByTagName('*');
++    const matched = [];
++    for (let i = 0; i < all.length; i++) {
++      if (getNodeLocalName(all[i]) === target) {
++        matched.push(all[i]);
++      }
++    }
++    return matched;
++  }
++
++  return [];
+ }
+ 
+ /**
+  * Robust XML helper extracting trimmed text content from elements matching localName.
+- * Uses getElementsByTagNameNS('*', localName) and child node iteration to avoid
+- * DOMParser selector syntax errors on XML namespaces (e.g. 'dc:title').
++ * Seamless across strict XML documents (application/xml), XHTML, and HTML5 fallback (text/html).
++ * Handles undeclared prefixes (e.g. <dc:title> when xmlns:dc is omitted).
+  *
+  * @param {Element|Document} parentNode
+  * @param {string} localName - e.g. "title", "creator", "identifier"
+@@ -37,8 +134,9 @@
+  */
+ export function getMetaText(parentNode, localName, fallback = '') {
+   if (!parentNode) return fallback;
++  const target = (localName || '').toLowerCase();
+ 
+-  // 1. Try getElementsByTagNameNS with wildcard namespace
++  // 1. Try getElementsByTagNameNS with wildcard namespace (fast path for valid XML/XHTML)
+   if (typeof parentNode.getElementsByTagNameNS === 'function') {
+     const elements = parentNode.getElementsByTagNameNS('*', localName);
+     for (let i = 0; i < elements.length; i++) {
+@@ -47,24 +145,38 @@
+     }
+   }
+ 
+-  // 2. Iterate child elements checking localName
++  // 2. Iterate child elements checking prefix-stripped localName
+   const children = parentNode.children || parentNode.childNodes || [];
+   for (let i = 0; i < children.length; i++) {
+     const node = children[i];
+     if (node.nodeType === 1) { // ELEMENT_NODE
+-      const nodeLocal = (node.localName || node.nodeName.split(':').pop() || '').toLowerCase();
+-      if (nodeLocal === localName.toLowerCase()) {
++      const nodeLocal = getNodeLocalName(node);
++      if (nodeLocal === target) {
+         const text = node.textContent ? node.textContent.trim() : '';
+         if (text) return text;
+       }
+     }
+   }
+ 
++  // 3. Fallback: Search all descendants if not found in immediate children (for HTML5 fallback mode)
++  if (typeof parentNode.getElementsByTagName === 'function') {
++    const elements = parentNode.getElementsByTagName('*');
++    for (let i = 0; i < elements.length; i++) {
++      const node = elements[i];
++      const nodeLocal = getNodeLocalName(node);
++      if (nodeLocal === target) {
++        const text = node.textContent ? node.textContent.trim() : '';
++        if (text) return text;
++      }
++    }
++  }
++
+   return fallback;
+ }
+ 
+ /**
+  * Gathers all trimmed text values for elements matching localName (e.g. multiple creators).
++ * Seamless across strict XML, XHTML, and HTML5 fallback documents.
+  *
+  * @param {Element|Document} parentNode
+  * @param {string} localName
+@@ -73,7 +185,9 @@
+ export function getAllMetaText(parentNode, localName) {
+   if (!parentNode) return [];
+   const results = [];
++  const target = (localName || '').toLowerCase();
+ 
++  // 1. Try getElementsByTagNameNS with wildcard namespace (fast path for valid XML/XHTML)
+   if (typeof parentNode.getElementsByTagNameNS === 'function') {
+     const elements = parentNode.getElementsByTagNameNS('*', localName);
+     for (let i = 0; i < elements.length; i++) {
+@@ -84,13 +198,14 @@
+     }
+   }
+ 
++  // 2. Iterate child elements checking prefix-stripped localName
+   if (results.length === 0) {
+     const children = parentNode.children || parentNode.childNodes || [];
+     for (let i = 0; i < children.length; i++) {
+       const node = children[i];
+       if (node.nodeType === 1) {
+-        const nodeLocal = (node.localName || node.nodeName.split(':').pop() || '').toLowerCase();
+-        if (nodeLocal === localName.toLowerCase()) {
++        const nodeLocal = getNodeLocalName(node);
++        if (nodeLocal === target) {
+           const text = node.textContent ? node.textContent.trim() : '';
+           if (text && !results.includes(text)) {
+             results.push(text);
+@@ -100,6 +215,21 @@
+     }
+   }
+ 
++  // 3. Fallback: Search all descendants if not found in immediate children
++  if (results.length === 0 && typeof parentNode.getElementsByTagName === 'function') {
++    const elements = parentNode.getElementsByTagName('*');
++    for (let i = 0; i < elements.length; i++) {
++      const node = elements[i];
++      const nodeLocal = getNodeLocalName(node);
++      if (nodeLocal === target) {
++        const text = node.textContent ? node.textContent.trim() : '';
++        if (text && !results.includes(text)) {
++          results.push(text);
++        }
++      }
++    }
++  }
++
+   return results;
+ }
+ 
+@@ -129,7 +259,7 @@
+         }
+ 
+         if (doc && !doc.querySelector('parsererror')) {
+-          const rootfiles = doc.querySelectorAll('rootfile');
++          const rootfiles = findElementsByLocal(doc, 'rootfile');
+           // Prefer media-type="application/oebps-package+xml"
+           for (let i = 0; i < rootfiles.length; i++) {
+             const rf = rootfiles[i];
+@@ -204,9 +334,9 @@
+     }
+ 
+     const opfDir = PathResolver.getBaseDir(opfPath);
+-    const packageEl = doc.querySelector('package') || doc.documentElement;
++    const packageEl = findElementByLocal(doc, 'package') || doc.documentElement;
+     const packageVersion = packageEl ? packageEl.getAttribute('version') || '2.0' : '2.0';
+-    const metadataEl = doc.querySelector('metadata') || packageEl;
++    const metadataEl = findElementByLocal(doc, 'metadata') || packageEl;
+ 
+     // 1. Dublin Core Metadata Extraction
+     let rawTitle = getMetaText(metadataEl, 'title', '');
+@@ -226,7 +356,7 @@
+     let identifier = '';
+     const uniqueIdAttr = packageEl ? packageEl.getAttribute('unique-identifier') : null;
+     if (uniqueIdAttr && metadataEl) {
+-      const idElements = metadataEl.querySelectorAll('identifier');
++      const idElements = findElementsByLocal(metadataEl, 'identifier');
+       for (let i = 0; i < idElements.length; i++) {
+         if (idElements[i].getAttribute('id') === uniqueIdAttr) {
+           identifier = idElements[i].textContent.trim();
+@@ -245,14 +375,21 @@
+     // 2. Manifest Items Map
+     const manifest = new Map();
+     const manifestByPath = new Map();
+-    const itemElements = doc.querySelectorAll('manifest > item, item');
++    const manifestEl = findElementByLocal(doc, 'manifest');
++    const itemElements = manifestEl
++      ? findElementsByLocal(manifestEl, 'item')
++      : findElementsByLocal(doc, 'item').filter(el => {
++          let parent = el.parentElement;
++          while (parent) {
++            const pName = getNodeLocalName(parent);
++            if (pName === 'metadata' || pName === 'spine') return false;
++            parent = parent.parentElement;
++          }
++          return true;
++        });
+ 
+     for (let i = 0; i < itemElements.length; i++) {
+       const itemEl = itemElements[i];
+-      // Guard against nested items outside <manifest>
+-      if (itemEl.parentElement && itemEl.parentElement.localName && itemEl.parentElement.localName.toLowerCase() !== 'manifest') {
+-        continue;
+-      }
+ 
+       const id = itemEl.getAttribute('id') || '';
+       const href = itemEl.getAttribute('href') || '';
+@@ -278,15 +415,22 @@
+ 
+     // 3. Spine Reading Order
+     const spine = [];
+-    const spineEl = doc.querySelector('spine');
++    const spineEl = findElementByLocal(doc, 'spine');
+     const spineTocId = spineEl ? spineEl.getAttribute('toc') || undefined : undefined;
+-    const itemrefElements = doc.querySelectorAll('spine > itemref, itemref');
++    const itemrefElements = spineEl
++      ? findElementsByLocal(spineEl, 'itemref')
++      : findElementsByLocal(doc, 'itemref').filter(el => {
++          let parent = el.parentElement;
++          while (parent) {
++            const pName = getNodeLocalName(parent);
++            if (pName === 'metadata' || pName === 'manifest') return false;
++            parent = parent.parentElement;
++          }
++          return true;
++        });
+ 
+     for (let i = 0; i < itemrefElements.length; i++) {
+       const ir = itemrefElements[i];
+-      if (ir.parentElement && ir.parentElement.localName && ir.parentElement.localName.toLowerCase() !== 'spine') {
+-        continue;
+-      }
+ 
+       const idref = ir.getAttribute('idref');
+       const linearAttr = ir.getAttribute('linear');
+@@ -346,7 +490,7 @@
+ 
+     // Step 2: <meta name="cover" content="id"> (EPUB 2)
+     if (!coverItem && metadataEl) {
+-      const metaElements = metadataEl.querySelectorAll('meta');
++      const metaElements = findElementsByLocal(metadataEl, 'meta');
+       for (let i = 0; i < metaElements.length; i++) {
+         const m = metaElements[i];
+         if (m.getAttribute('name') === 'cover') {

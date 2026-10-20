@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebReader — Minimal Eye-Friendly EPUB Reader</title>
+
+  <!-- Synchronous FOUC-Free Theme & Typography Bootstrap -->
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('webreader_theme') || 'warm-paper';
+        var allowed = [
+          'warm-paper',
+          'soft-dark',
+          'daylight',
+          'sage',
+          'solarized-light',
+          'solarized-dark',
+          'nord',
+          'oled-black',
+          'rose-pine',
+          'e-ink'
+        ];
+        if (allowed.indexOf(theme) === -1) theme = 'warm-paper';
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.classList.add('no-theme-transition');
+
+        var rawTypo = localStorage.getItem('webreader_typography');
+        if (rawTypo) {
+          var typo = JSON.parse(rawTypo);
+          if (typo && typo.fontSize) {
+            document.documentElement.style.setProperty('--reader-font-size', typo.fontSize + 'px');
+          }
+          if (typo && typo.lineHeight) {
+            document.documentElement.style.setProperty('--reader-line-height', String(typo.lineHeight));
+          }
+          if (typo && typo.maxWidth) {
+            document.documentElement.style.setProperty('--reader-max-width', typo.maxWidth + 'px');
+          }
+        }
+      } catch (e) {
+        document.documentElement.dataset.theme = 'warm-paper';
+        document.documentElement.setAttribute('data-theme', 'warm-paper');
+      }
+
+      function removeNoTransition() {
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            document.documentElement.classList.remove('no-theme-transition');
+          });
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', removeNoTransition);
+      } else {
+        removeNoTransition();
+      }
+    })();
+  </script>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/reader.css">
+
+  <!-- Standalone Vendor Scripts (Zero Build Step) -->
+  <script src="vendor/jszip.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- ===================================================================
+         1. LIBRARY VIEW
+         =================================================================== -->
+    <main id="library-view" class="library-view">
+      <header class="app-header library-header">
+        <div class="brand-group">
+          <svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-.75L9 9V4zm9 16H6V4h1v9l3-2.25L13 13V4h5v16z"/>
+          </svg>
+          <div>
+            <h1 class="brand-title">WebReader</h1>
+            <p class="brand-subtitle">Minimal, eye-friendly library</p>
+          </div>
+        </div>
+
+        <!-- Format Filter Controls -->
+        <div class="header-filter-group">
+          <nav id="format-filter-bar" class="format-filter-bar segmented-control library-filter-tabs filter-tabs" role="tablist" aria-label="Filter books by format" data-component="format-filter-bar">
+            <button type="button" id="filter-tab-all" class="segmented-option format-filter-btn filter-tab-all is-active" data-filter="all" data-format-filter="all" data-format="all" role="tab" aria-selected="true" aria-controls="library-grid">All</button>
+            <button type="button" id="filter-tab-epub" class="segmented-option format-filter-btn filter-tab-epub" data-filter="epub" data-format-filter="epub" data-format="epub" role="tab" aria-selected="false" aria-controls="library-grid">EPUB</button>
+            <button type="button" id="filter-tab-pdf" class="segmented-option format-filter-btn filter-tab-pdf" data-filter="pdf" data-format-filter="pdf" data-format="pdf" role="tab" aria-selected="false" aria-controls="library-grid">PDF</button>
+            <button type="button" id="filter-tab-mobi" class="segmented-option format-filter-btn filter-tab-mobi" data-filter="mobi" data-format-filter="mobi" data-format="mobi" role="tab" aria-selected="false" aria-controls="library-grid">MOBI</button>
+            <button type="button" id="filter-tab-txt" class="segmented-option format-filter-btn filter-tab-txt" data-filter="txt" data-format-filter="txt" data-format="txt" role="tab" aria-selected="false" aria-controls="library-grid">TXT</button>
+            <button type="button" id="filter-tab-md" class="segmented-option format-filter-btn filter-tab-md" data-filter="md" data-format-filter="md" data-format="md" role="tab" aria-selected="false" aria-controls="library-grid">MD</button>
+          </nav>
+        </div>
+
+        <div class="library-actions">
+          <input type="file" id="file-input" accept=".epub,.pdf,.mobi,.azw,.txt,.md,application/epub+zip,application/pdf,application/x-mobipocket-ebook,application/vnd.amazon.ebook,text/plain,text/markdown,text/x-markdown" multiple class="sr-only" aria-label="Import books and documents (.epub, .pdf, .mobi, .azw, .txt, .md)">
+          <button type="button" id="btn-restore-sample" class="btn btn-secondary" title="Restore sample book">
+            Sample Book
+          </button>
+          <button type="button" id="btn-import-epub" class="btn btn-primary" title="Import e-books or documents">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            <span>Import Book</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="library-content">
+        <!-- Drag and Drop Import Zone -->
+        <div id="drop-zone" class="drop-zone" role="region" aria-label="Drag and drop book files">
+          <div class="drop-zone-inner">
+            <svg class="drop-zone-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+            </svg>
+            <p class="drop-zone-text">
+              Drag &amp; drop <strong>.epub, .pdf, .mobi, .azw, .txt, .md</strong> files here, or click <strong>Import Book</strong> above
+            </p>
+            <p class="drop-zone-subtext">Stored privately in your browser for instant offline reading</p>
+          </div>
+        </div>
+
+        <!-- Book Shelf Grid -->
+        <div class="shelf-header">
+          <h2 class="shelf-title">Your Bookshelf</h2>
+        </div>
+        <div id="library-grid" class="card-grid library-grid" role="list">
+          <article class="card book-card" data-book-id="sample-book-001" data-format="epub" tabindex="0" role="button" aria-label="Open The Art of Reading: Typography, Optics &amp; Digital Comfort by Master Bibliophile (EPUB)">
+            <div class="book-cover-wrapper">
+              <span class="book-format-badge format-epub">EPUB</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" class="book-cover">
+                <rect width="600" height="900" fill="#2c2523"/>
+                <rect x="25" y="25" width="550" height="850" fill="none" stroke="#e5a869" stroke-width="3" rx="8"/>
+                <text x="300" y="420" text-anchor="middle" font-family="Georgia, serif" font-size="34" font-weight="bold" fill="#f8f1e3">THE ART OF</text>
+                <text x="300" y="475" text-anchor="middle" font-family="Georgia, serif" font-size="44" font-weight="bold" fill="#e5a869">READING</text>
+              </svg>
+              <span class="book-progress-badge">New</span>
+            </div>
+            <div class="book-card-body">
+              <h3 class="book-title title">The Art of Reading: Typography, Optics &amp; Digital Comfort</h3>
+              <p class="book-author author">Master Bibliophile</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===================================================================
+         2. READER VIEW
+         =================================================================== -->
+    <section id="reader-view" class="reader-view" style="display: none;" aria-hidden="true">
+      <!-- Top Unobtrusive Reader Header -->
+      <header id="reader-header" class="reader-header">
+        <div class="reader-header-left">
+          <button type="button" id="btn-back-library" class="btn btn-ghost" title="Back to Library" aria-label="Back to Library">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+            <span>Library</span>
+          </button>
+
+          <button type="button" id="btn-toc" class="btn btn-ghost btn-toc" data-action="toc" title="Table of Contents &amp; Bookmarks" aria-label="Table of Contents">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+            </svg>
+            <span>Contents</span>
+          </button>
+        </div>
+
+        <h2 id="reader-book-title" class="reader-book-title book-title">Book Title</h2>
+
+        <div class="reader-header-right">
+          <button type="button" id="btn-mode" class="btn btn-secondary btn-mode" data-action="toggle-mode" title="Toggle Paginated / Scroll View">
+            <span class="mode-label">Paginated</span>
+          </button>
+
+          <button type="button" id="btn-bookmark" class="btn btn-icon btn-ghost btn-bookmark" data-action="bookmark" title="Bookmark this page" aria-label="Toggle Bookmark" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+            </svg>
+          </button>
+
+          <button type="button" id="btn-bookmarks" class="btn btn-icon btn-ghost" data-tab="bookmarks" title="View Saved Bookmarks" aria-label="Saved Bookmarks">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19 18l2 1V3c0-1.1-.9-2-2-2H8.99C7.89 1 7 1.9 7 3h10c1.1 0 2 .9 2 2v13zM15 5H5c-1.1 0-2 .9-2 2v16l7-3 7 3V7c0-1.1-.9-2-2-2z"/>
+            </svg>
+          </button>
+
+          <button type="button" id="btn-settings" class="btn btn-ghost btn-settings" data-action="settings" title="Appearance &amp; Typography Settings" aria-label="Reading Settings">
+            <span style="font-weight: 700; font-family: Georgia, serif; font-size: 1rem;">Aa</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Reading Stage (Sandboxed Iframe + 3-Zone Tap Overlay) -->
+      <div id="reader-stage" class="reader-stage" data-reading-mode="paginated">
+        <iframe id="reader-frame" class="reader-frame" sandbox="allow-same-origin" title="Book Chapter Content"></iframe>
+
+        <div id="reader-tap-zones" class="reader-tap-zones">
+          <div class="tap-zone tap-zone-left tap-zone-prev" title="Previous Page"></div>
+          <div class="tap-zone tap-zone-center tap-zone-menu" title="Toggle Toolbar"></div>
+          <div class="tap-zone tap-zone-right tap-zone-next" title="Next Page"></div>
+        </div>
+      </div>
+
+      <!-- Subtle Bottom Progress Footer -->
+      <footer id="reader-footer" class="reader-footer">
+        <div id="reader-progress-track" class="reader-progress-track">
+          <div id="reader-progress-bar" class="reader-progress-bar"></div>
+        </div>
+        <div class="reader-footer-content">
+          <span id="chapter-title" class="reader-chapter-title chapter-title">Chapter 1</span>
+          <div class="reader-footer-nav">
+            <button type="button" id="btn-prev-page" class="btn btn-ghost btn-sm" title="Previous Page (Left Arrow)" aria-label="Previous Page">‹ Prev</button>
+            <span id="page-info" class="reader-page-indicator page-indicator">Page 1 of 1 • 0%</span>
+            <button type="button" id="btn-next-page" class="btn btn-ghost btn-sm" title="Next Page (Right Arrow)" aria-label="Next Page">Next ›</button>
+          </div>
+        </div>
+      </footer>
+    </section>
+
+    <!-- ===================================================================
+         3. SHARED DRAWER BACKDROP
+         =================================================================== -->
+    <div id="drawer-backdrop" class="drawer-backdrop"></div>
+
+    <!-- ===================================================================
+         4. TABLE OF CONTENTS & BOOKMARKS DRAWER (Left Slide-in)
+         =================================================================== -->
+    <aside id="toc-drawer" class="drawer toc-drawer" aria-hidden="true" aria-label="Book Navigation">
+      <div class="drawer-header">
+        <div class="segmented-control drawer-tabs" role="tablist">
+          <button type="button" id="tab-toc" class="segmented-option is-active" data-tab="toc" role="tab" aria-selected="true">
+            Contents
+          </button>
+          <button type="button" id="tab-bookmarks" class="segmented-option" data-tab="bookmarks" role="tab" aria-selected="false">
+            Bookmarks
+          </button>
+        </div>
+        <button type="button" id="btn-close-toc" class="btn btn-icon btn-ghost" aria-label="Close navigation drawer">
+          ×
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <nav id="toc-list" class="toc-list" aria-label="Table of Contents"></nav>
+        <div id="bookmarks-panel" class="bookmarks-panel" aria-label="Saved Bookmarks"></div>
+      </div>
+    </aside>
+
+    <!-- ===================================================================
+         5. EYE-COMFORT & TYPOGRAPHY SETTINGS DRAWER (Right Slide-in)
+         =================================================================== -->
+    <aside id="settings-drawer" class="drawer drawer-right settings-drawer" aria-hidden="true" aria-label="Appearance and Typography Settings">
+      <div class="drawer-header">
+        <h3 class="drawer-title">Reading Comfort</h3>
+        <button type="button" id="btn-close-settings" class="btn btn-icon btn-ghost" aria-label="Close settings drawer">
+          ×
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Eye-Comfort Color Themes -->
+        <div class="form-group">
+          <label class="form-label" id="theme-group-label">Eye-Comfort Theme</label>
+          <div class="theme-swatches theme-options-grid" id="theme-options" role="radiogroup" aria-labelledby="theme-group-label">
+            <button type="button" id="theme-warm-paper" class="theme-swatch-btn theme-option is-active" data-theme-choice="warm-paper" data-theme="warm-paper" role="radio" aria-checked="true" aria-pressed="true" aria-label="Warm Paper (Sepia)" tabindex="0">
+              <span class="theme-circle" style="background-color: #f8f1e3; border-color: #8b5a2b;"></span>
+              <span class="theme-swatch-label">Warm Paper</span>
+            </button>
+
+            <button type="button" id="theme-soft-dark" class="theme-swatch-btn theme-option" data-theme-choice="soft-dark" data-theme="soft-dark" role="radio" aria-checked="false" aria-pressed="false" aria-label="Soft Dark (Night)" tabindex="-1">
+              <span class="theme-circle" style="background-color: #1a1c1e; border-color: #e5a869;"></span>
+              <span class="theme-swatch-label">Soft Dark</span>
+            </button>
+
+            <button type="button" id="theme-daylight" class="theme-swatch-btn theme-option" data-theme-choice="daylight" data-theme="daylight" role="radio" aria-checked="false" aria-pressed="false" aria-label="Daylight (Clean Light)" tabindex="-1">
+              <span class="theme-circle" style="background-color: #fcfbf9; border-color: #2364a0;"></span>
+              <span class="theme-swatch-label">Daylight</span>
+            </button>
+
+            <button type="button" id="theme-sage" class="theme-swatch-btn theme-option" data-theme-choice="sage" data-theme="sage" role="radio" aria-checked="false" aria-pressed="false" aria-label="Sage Calm (Forest)" tabindex="-1">
+              <span class="theme-circle" style="background-color: #eef3ed; border-color: #2d7348;"></span>
+              <span class="theme-swatch-label">Sage Calm</span>
+            </button>
+
+            <button type="button" id="theme-solarized-light" class="theme-swatch-btn theme-option" data-theme-choice="solarized-light" data-theme="solarized-light" role="radio" aria-checked="false" aria-pressed="false" aria-label="Solarized Light" tabindex="-1">
+              <span class="theme-circle" style="background-color: #fdf6e3; border-color: #268bd2;"></span>
+              <span class="theme-swatch-label">Solarized Light</span>
+            </button>
+
+            <button type="button" id="theme-solarized-dark" class="theme-swatch-btn theme-option" data-theme-choice="solarized-dark" data-theme="solarized-dark" role="radio" aria-checked="false" aria-pressed="false" aria-label="Solarized Dark" tabindex="-1">
+              <span class="theme-circle" style="background-color: #002b36; border-color: #2aa198;"></span>
+              <span class="theme-swatch-label">Solarized Dark</span>
+            </button>
+
+            <button type="button" id="theme-nord" class="theme-swatch-btn theme-option" data-theme-choice="nord" data-theme="nord" role="radio" aria-checked="false" aria-pressed="false" aria-label="Nord (Arctic)" tabindex="-1">
+              <span class="theme-circle" style="background-color: #2e3440; border-color: #88c0d0;"></span>
+              <span class="theme-swatch-label">Nord</span>
+            </button>
+
+            <button type="button" id="theme-oled-black" class="theme-swatch-btn theme-option" data-theme-choice="oled-black" data-theme="oled-black" role="radio" aria-checked="false" aria-pressed="false" aria-label="OLED Black" tabindex="-1">
+              <span class="theme-circle" style="background-color: #000000; border-color: #c8c8c8;"></span>
+              <span class="theme-swatch-label">OLED Black</span>
+            </button>
+
+            <button type="button" id="theme-rose-pine" class="theme-swatch-btn theme-option" data-theme-choice="rose-pine" data-theme="rose-pine" role="radio" aria-checked="false" aria-pressed="false" aria-label="Rosé Pine" tabindex="-1">
+              <span class="theme-circle" style="background-color: #191724; border-color: #ebbcba;"></span>
+              <span class="theme-swatch-label">Rosé Pine</span>
+            </button>
+
+            <button type="button" id="theme-e-ink" class="theme-swatch-btn theme-option" data-theme-choice="e-ink" data-theme="e-ink" role="radio" aria-checked="false" aria-pressed="false" aria-label="E-Ink (Grayscale)" tabindex="-1">
+              <span class="theme-circle" style="background-color: #f0f0eb; border-color: #1a1a1a;"></span>
+              <span class="theme-swatch-label">E-Ink</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Font Family -->
+        <div class="form-group">
+          <label class="form-label">Typeface</label>
+          <div class="segmented-control">
+            <button type="button" class="segmented-option is-active" data-font-choice="serif">Serif</button>
+            <button type="button" class="segmented-option" data-font-choice="sans">Sans-Serif</button>
+            <button type="button" class="segmented-option" data-font-choice="dyslexic">Dyslexic</button>
+          </div>
+        </div>
+
+        <!-- Font Size Slider -->
+        <div class="form-group">
+          <div class="form-label">
+            <label for="font-size-slider">Font Size</label>
+            <span id="font-size-value" class="form-value-display">18px</span>
+          </div>
+          <input type="range" id="font-size-slider" name="fontSize" data-setting="fontSize" class="range-slider" min="14" max="32" step="1" value="18">
+        </div>
+
+        <!-- Line Height Slider -->
+        <div class="form-group">
+          <div class="form-label">
+            <label for="line-height-slider">Line Spacing</label>
+            <span id="line-height-value" class="form-value-display">1.75</span>
+          </div>
+          <input type="range" id="line-height-slider" name="lineHeight" data-setting="lineHeight" class="range-slider" min="1.3" max="2.4" step="0.05" value="1.75">
+        </div>
+
+        <!-- Reading Column Width Slider -->
+        <div class="form-group">
+          <div class="form-label">
+            <label for="max-width-slider">Line Width</label>
+            <span id="max-width-value" class="form-value-display">720px</span>
+          </div>
+          <input type="range" id="max-width-slider" name="maxWidth" data-setting="maxWidth" class="range-slider" min="540" max="1000" step="20" value="720">
+        </div>
+      </div>
+    </aside>
+
+    <!-- Accessible Toast Container -->
+    <div id="toast-container" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
+  </div>
+
+  <!-- Application Module Entry Point -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
