@@ -27,8 +27,9 @@ export class PaginatedView {
     this.isTransitioning = false;
 
     this._resizeObserver = null;
+    this._resizeRafId = null;
     this._boundaryDebounceTimer = null;
-    this._boundOnResize = this._handleResize.bind(this);
+    this._boundOnResize = this._scheduleResize.bind(this);
   }
 
   /**
@@ -121,7 +122,11 @@ export class PaginatedView {
         color: var(--color-text, #2c2523) !important;
         font-family: var(--reader-font-family, serif) !important;
         font-size: var(--reader-font-size, 18px) !important;
+        font-size-adjust: from-font;
+        font-weight: var(--reader-font-weight, 400) !important;
         line-height: var(--reader-line-height, 1.75) !important;
+        letter-spacing: var(--reader-letter-spacing, 0em) !important;
+        word-spacing: var(--reader-word-spacing, 0em) !important;
       }
       #content-wrapper {
         height: 100vh !important;
@@ -132,7 +137,6 @@ export class PaginatedView {
         column-fill: auto !important;
         padding: var(--page-padding-v, 32px) var(--page-padding-h, 36px) !important;
         transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        will-change: transform;
       }
       #content-wrapper.no-transition {
         transition: none !important;
@@ -143,6 +147,7 @@ export class PaginatedView {
         break-after: avoid;
         page-break-after: avoid;
         line-height: 1.3 !important;
+        text-wrap: balance;
       }
       img, svg, picture, figure, video, canvas {
         break-inside: avoid;
@@ -170,11 +175,22 @@ export class PaginatedView {
         break-inside: avoid;
         page-break-inside: avoid;
       }
+      p, blockquote, li {
+        font-family: var(--reader-font-family, serif) !important;
+        font-weight: var(--reader-font-weight, 400) !important;
+        line-height: var(--reader-line-height, 1.75) !important;
+        letter-spacing: var(--reader-letter-spacing, 0em) !important;
+        word-spacing: var(--reader-word-spacing, 0em) !important;
+        text-align: var(--reader-text-align, left) !important;
+        -webkit-hyphens: var(--reader-hyphens, manual) !important;
+        hyphens: var(--reader-hyphens, manual) !important;
+      }
       p {
         orphans: 2;
         widows: 2;
         word-break: break-word;
         overflow-wrap: break-word;
+        margin-bottom: var(--reader-paragraph-spacing, 1.25em) !important;
       }
     `;
   }
@@ -410,11 +426,11 @@ export class PaginatedView {
     if (!animate) {
       wrapper.classList.add('no-transition');
       wrapper.style.transform = `translateX(-${offset}px)`;
-      // Force layout flush
-      void wrapper.offsetHeight;
-      wrapper.classList.remove('no-transition');
     } else {
-      wrapper.classList.remove('no-transition');
+      if (wrapper.classList.contains('no-transition')) {
+        void wrapper.offsetHeight;
+        wrapper.classList.remove('no-transition');
+      }
       wrapper.style.transform = `translateX(-${offset}px)`;
     }
   }
@@ -426,6 +442,18 @@ export class PaginatedView {
     }, 200);
 
     this.onChapterBoundary(direction);
+  }
+
+  _scheduleResize() {
+    if (!this.isActive || this._resizeRafId) return;
+    if (typeof requestAnimationFrame === 'function') {
+      this._resizeRafId = requestAnimationFrame(() => {
+        this._resizeRafId = null;
+        this._handleResize();
+      });
+    } else {
+      this._handleResize();
+    }
   }
 
   _handleResize() {
@@ -447,12 +475,12 @@ export class PaginatedView {
 
     const win = this._getWin();
     if (win) {
-      win.addEventListener('resize', this._boundOnResize);
+      win.addEventListener('resize', this._boundOnResize, { passive: true });
     }
 
     if (typeof ResizeObserver !== 'undefined' && this.iframe) {
       this._resizeObserver = new ResizeObserver(() => {
-        this._handleResize();
+        this._scheduleResize();
       });
       this._resizeObserver.observe(this.iframe);
       if (this.stage) {
@@ -462,6 +490,10 @@ export class PaginatedView {
   }
 
   _detachResizeObserver() {
+    if (this._resizeRafId && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(this._resizeRafId);
+      this._resizeRafId = null;
+    }
     const win = this._getWin();
     if (win) {
       win.removeEventListener('resize', this._boundOnResize);

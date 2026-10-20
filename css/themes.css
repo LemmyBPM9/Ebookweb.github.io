@@ -10,10 +10,14 @@
 :root {
   --reader-font-family: 'Merriweather', 'Georgia', 'Iowan Old Style', 'Palatino Linotype', serif;
   --reader-font-size: 18px;
+  --reader-font-weight: 400;
   --reader-line-height: 1.75;
   --reader-max-width: 720px;
   --reader-text-align: left;
+  --reader-hyphens: manual;
   --reader-paragraph-spacing: 1.25em;
+  --reader-letter-spacing: 0.00em;
+  --reader-word-spacing: 0.00em;
   --reader-page-margin: 40px;
 }
 

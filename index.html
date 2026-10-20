@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WebReader — Minimal Eye-Friendly EPUB Reader</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%238b5a2b' d='M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z'/></svg>">
 
   <!-- Synchronous FOUC-Free Theme & Typography Bootstrap -->
   <script>
@@ -38,6 +39,23 @@
           }
           if (typo && typo.maxWidth) {
             document.documentElement.style.setProperty('--reader-max-width', typo.maxWidth + 'px');
+          }
+          if (typo && typo.fontWeight) {
+            document.documentElement.style.setProperty('--reader-font-weight', String(typo.fontWeight));
+          }
+          if (typo && typo.textAlign) {
+            var align = typo.textAlign === 'justify' ? 'justify' : 'left';
+            document.documentElement.style.setProperty('--reader-text-align', align);
+            document.documentElement.style.setProperty('--reader-hyphens', align === 'justify' ? 'auto' : 'manual');
+          }
+          if (typo && typeof typo.paragraphSpacing === 'number') {
+            document.documentElement.style.setProperty('--reader-paragraph-spacing', typo.paragraphSpacing.toFixed(2) + 'em');
+          }
+          if (typo && typeof typo.letterSpacing === 'number') {
+            document.documentElement.style.setProperty('--reader-letter-spacing', typo.letterSpacing.toFixed(2) + 'em');
+          }
+          if (typo && typeof typo.wordSpacing === 'number') {
+            document.documentElement.style.setProperty('--reader-word-spacing', typo.wordSpacing.toFixed(2) + 'em');
           }
         }
       } catch (e) {
@@ -322,13 +340,42 @@
           </div>
         </div>
 
-        <!-- Font Family -->
+        <!-- Font Family (8 Classic Book Serifs, Sans & Accessible Typefaces) -->
         <div class="form-group">
-          <label class="form-label">Typeface</label>
-          <div class="segmented-control">
-            <button type="button" class="segmented-option is-active" data-font-choice="serif">Serif</button>
-            <button type="button" class="segmented-option" data-font-choice="sans">Sans-Serif</button>
-            <button type="button" class="segmented-option" data-font-choice="dyslexic">Dyslexic</button>
+          <label class="form-label" id="font-family-group-label">Typeface</label>
+          <div class="segmented-control font-choice-grid" id="font-family-options" role="radiogroup" aria-labelledby="font-family-group-label">
+            <button type="button" class="segmented-option is-active" data-font-choice="serif" role="radio" aria-checked="true" aria-pressed="true">
+              <span class="font-option-name" style="font-family: 'Georgia', 'Iowan Old Style', serif;">Classic Serif</span>
+              <span class="font-option-meta">System Book</span>
+            </button>
+            <button type="button" class="segmented-option" data-font-choice="literata" role="radio" aria-checked="false" aria-pressed="false">
+              <span class="font-option-name" style="font-family: 'Literata', 'Georgia', serif;">Literata</span>
+              <span class="font-option-meta">E-Book Serif</span>
+            </button>
+            <button type="button" class="segmented-option" data-font-choice="merriweather" role="radio" aria-checked="false" aria-pressed="false">
+              <span class="font-option-name" style="font-family: 'Merriweather', 'Georgia', serif;">Merriweather</span>
+              <span class="font-option-meta">Screen Serif</span>
+            </button>
+            <button type="button" class="segmented-option" data-font-choice="lora" role="radio" aria-checked="false" aria-pressed="false">
+              <span class="font-option-name" style="font-family: 'Lora', 'Georgia', serif;">Lora</span>
+              <span class="font-option-meta">Calligraphic</span>
+            </button>
+            <button type="button" class="segmented-option" data-font-choice="garamond" role="radio" aria-checked="false" aria-pressed="false">
+              <span class="font-option-name" style="font-family: 'EB Garamond', 'Garamond', serif;">EB Garamond</span>
+              <span class="font-option-meta">Classic Literary</span>
+            </button>
+            <button type="button" class="segmented-option" data-font-choice="crimson" role="radio" aria-checked="false" aria-pressed="false">
+              <span class="font-option-name" style="font-family: 'Crimson Pro', 'Georgia', serif;">Crimson Pro</span>
+              <span class="font-option-meta">Old-Style Book</span>
+            </button>
+            <button type="button" class="segmented-option" data-font-choice="sans" role="radio" aria-checked="false" aria-pressed="false">
+              <span class="font-option-name" style="font-family: system-ui, -apple-system, sans-serif;">Sans-Serif</span>
+              <span class="font-option-meta">Clean Modern</span>
+            </button>
+            <button type="button" class="segmented-option" data-font-choice="dyslexic" role="radio" aria-checked="false" aria-pressed="false">
+              <span class="font-option-name" style="font-family: 'OpenDyslexic', 'Comic Sans MS', 'Verdana', monospace;">Dyslexic</span>
+              <span class="font-option-meta">High Legibility</span>
+            </button>
           </div>
         </div>
 
@@ -341,6 +388,24 @@
           <input type="range" id="font-size-slider" name="fontSize" data-setting="fontSize" class="range-slider" min="14" max="32" step="1" value="18">
         </div>
 
+        <!-- Font Weight Slider -->
+        <div class="form-group">
+          <div class="form-label">
+            <label for="font-weight-slider">Font Weight</label>
+            <span id="font-weight-value" class="form-value-display">400 (Regular)</span>
+          </div>
+          <input type="range" id="font-weight-slider" name="fontWeight" data-setting="fontWeight" class="range-slider" min="300" max="700" step="100" value="400">
+        </div>
+
+        <!-- Text Alignment -->
+        <div class="form-group">
+          <label class="form-label" id="text-align-group-label">Text Alignment</label>
+          <div class="segmented-control" id="text-align-options" role="radiogroup" aria-labelledby="text-align-group-label">
+            <button type="button" class="segmented-option is-active" data-align-choice="left" role="radio" aria-checked="true" aria-pressed="true">Left Aligned</button>
+            <button type="button" class="segmented-option" data-align-choice="justify" role="radio" aria-checked="false" aria-pressed="false">Justified</button>
+          </div>
+        </div>
+
         <!-- Line Height Slider -->
         <div class="form-group">
           <div class="form-label">
@@ -350,6 +415,33 @@
           <input type="range" id="line-height-slider" name="lineHeight" data-setting="lineHeight" class="range-slider" min="1.3" max="2.4" step="0.05" value="1.75">
         </div>
 
+        <!-- Paragraph Spacing Slider -->
+        <div class="form-group">
+          <div class="form-label">
+            <label for="paragraph-spacing-slider">Paragraph Spacing</label>
+            <span id="paragraph-spacing-value" class="form-value-display">1.25em</span>
+          </div>
+          <input type="range" id="paragraph-spacing-slider" name="paragraphSpacing" data-setting="paragraphSpacing" class="range-slider" min="0.5" max="2.5" step="0.05" value="1.25">
+        </div>
+
+        <!-- Letter Spacing Slider -->
+        <div class="form-group">
+          <div class="form-label">
+            <label for="letter-spacing-slider">Letter Spacing</label>
+            <span id="letter-spacing-value" class="form-value-display">0.00em</span>
+          </div>
+          <input type="range" id="letter-spacing-slider" name="letterSpacing" data-setting="letterSpacing" class="range-slider" min="-0.03" max="0.15" step="0.01" value="0">
+        </div>
+
+        <!-- Word Spacing Slider -->
+        <div class="form-group">
+          <div class="form-label">
+            <label for="word-spacing-slider">Word Spacing</label>
+            <span id="word-spacing-value" class="form-value-display">0.00em</span>
+          </div>
+          <input type="range" id="word-spacing-slider" name="wordSpacing" data-setting="wordSpacing" class="range-slider" min="0" max="0.30" step="0.01" value="0">
+        </div>
+
         <!-- Reading Column Width Slider -->
         <div class="form-group">
           <div class="form-label">
@@ -357,6 +449,15 @@
             <span id="max-width-value" class="form-value-display">720px</span>
           </div>
           <input type="range" id="max-width-slider" name="maxWidth" data-setting="maxWidth" class="range-slider" min="540" max="1000" step="20" value="720">
+        </div>
+
+        <hr class="settings-divider">
+
+        <!-- Reset Typography Defaults -->
+        <div class="form-group">
+          <button type="button" id="btn-reset-typography" class="btn btn-secondary settings-reset-btn">
+            Reset Typography Defaults
+          </button>
         </div>
       </div>
     </aside>

@@ -54,7 +54,9 @@ All **10 low-glare reading palettes** exceed WCAG AAA contrast standards ($\ge 7
 - **Zero-Idle CPU & Passive Listeners**: Uses `{ passive: true }` on scroll and touch listeners, debounces progress persistence, and avoids background polling timers when idle.
 
 ### 4. Real-Time Typography, TOC, Bookmarks & Security Sandbox
-- **Typography Controls (`Aa`)**: Real-time adjustments for typeface (`Serif`, `Sans-Serif`, `Dyslexic`), font size (`14px`–`32px`), line spacing (`1.30`–`2.40`), and line width (`540px`–`1000px`).
+- **8 Book Typefaces & Advanced Typography Controls (`Aa`)**:
+  - **8 Curated Typefaces**: `Classic Serif`, `Literata` (E-Book Serif), `Merriweather` (Screen Serif), `Lora` (Calligraphic), `EB Garamond` (Classic Literary), `Crimson Pro` (Old-Style Book), `Sans-Serif`, and `Dyslexic` (`OpenDyslexic`), loaded via Google Fonts with instant local system fallbacks and `font-size-adjust: from-font` visual stability.
+  - **Advanced Typography Sliders & Alignment**: Real-time adjustments for font size (`14px`–`32px`), font weight (`300 Light`–`700 Bold`), text alignment (`Left Aligned` with `text-wrap: pretty` or `Justified` with automatic `hyphens: auto`), line spacing (`1.30`–`2.40`), paragraph spacing (`0.50em`–`2.50em`), letter spacing (`-0.03em`–`0.15em`), word spacing (`0.00em`–`0.30em`), line width (`540px`–`1000px`), and a one-click **Reset Typography Defaults** button.
 - **Nested TOC & Bookmarks Drawer**: Multi-level chapter hierarchy with active indicator, internal `#anchor` jumping, and one-click bookmarks with text snippets.
 - **Universal `DOMSanitizer` & Sandbox**: Sanitizes untrusted markup across all 5 formats (stripping `<script>`, `<iframe>`, `<object>`, `<embed>`, `<form>`, inline `on*` handlers, and `javascript:`/`vbscript:`/`data:text/html` URIs) and isolates reflowable content inside `<iframe sandbox="allow-same-origin">` (without `allow-scripts`).
 

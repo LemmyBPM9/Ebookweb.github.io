@@ -296,13 +296,29 @@ export class LibraryView {
   }
 
   /**
+   * Yields to the main thread using scheduler.yield() (with setTimeout fallback)
+   * to keep Interaction to Next Paint (INP) responsive during multi-file imports.
+   * @private
+   */
+  async _yieldToMain() {
+    if (typeof window !== 'undefined' && 'scheduler' in window && typeof window.scheduler?.yield === 'function') {
+      return window.scheduler.yield();
+    }
+    return new Promise(resolve => setTimeout(resolve, 0));
+  }
+
+  /**
    * Imports one or more files (.epub, .pdf, .mobi, .azw, .txt, .md) into IndexedDB.
    * @param {Array<File>} files
    */
   async importFiles(files) {
     let lastImportedId = null;
 
-    for (const file of files) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (i > 0) {
+        await this._yieldToMain();
+      }
       try {
         const format = detectFormatFromFilename(file.name);
         if (!format) {
@@ -417,8 +433,14 @@ export class LibraryView {
       }
     }
 
-    for (const book of books) {
-      const progress = await StorageManager.getProgress(book.id).catch(() => null);
+    const progresses = await Promise.all(
+      books.map(book => StorageManager.getProgress(book.id).catch(() => null))
+    );
+
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < books.length; i++) {
+      const book = books[i];
+      const progress = progresses[i];
       const existingCard = grid.querySelector(`.book-card[data-book-id="${CSS.escape(book.id)}"]`);
       if (existingCard) {
         const badge = existingCard.querySelector('.book-progress-badge');
@@ -428,8 +450,11 @@ export class LibraryView {
         }
       } else {
         const card = this._createBookCard(book, progress);
-        grid.appendChild(card);
+        fragment.appendChild(card);
       }
+    }
+    if (fragment.childNodes.length > 0) {
+      grid.appendChild(fragment);
     }
 
     this._applyFilter();
@@ -475,6 +500,7 @@ export class LibraryView {
       const img = document.createElement('img');
       img.className = 'book-cover';
       img.alt = `${safeTitle} cover`;
+      img.decoding = 'async';
       const revokeOnceLoaded = () => {
         URL.revokeObjectURL(url);
         this.coverBlobUrls.delete(url);

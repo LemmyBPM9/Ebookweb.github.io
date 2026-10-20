@@ -20,11 +20,29 @@ export const THEMES = Object.freeze({
 export const VALID_THEMES = Object.freeze(Object.values(THEMES));
 export const DEFAULT_THEME = THEMES.WARM_PAPER;
 
+export const VALID_FONTS = Object.freeze([
+  'serif',
+  'literata',
+  'merriweather',
+  'lora',
+  'garamond',
+  'crimson',
+  'sans',
+  'dyslexic'
+]);
+
+export const VALID_ALIGNMENTS = Object.freeze(['left', 'justify']);
+
 export const DEFAULT_TYPOGRAPHY = Object.freeze({
-  fontFamily: 'serif',   // 'serif' | 'sans' | 'dyslexic'
-  fontSize: 18,         // px: 14 to 32
-  lineHeight: 1.75,     // unitless: 1.3 to 2.4
-  maxWidth: 720         // px: 540 to 1000
+  fontFamily: 'serif',      // 'serif' | 'literata' | 'merriweather' | 'lora' | 'garamond' | 'crimson' | 'sans' | 'dyslexic'
+  fontSize: 18,             // px: 14 to 32
+  lineHeight: 1.75,         // unitless: 1.3 to 2.4
+  maxWidth: 720,            // px: 540 to 1000
+  fontWeight: 400,          // numeric: 300 to 700
+  textAlign: 'left',        // 'left' | 'justify'
+  paragraphSpacing: 1.25,   // em: 0.5 to 2.5
+  letterSpacing: 0,         // em: -0.03 to 0.15
+  wordSpacing: 0            // em: 0 to 0.30
 });
 
 export const STORAGE_KEYS = Object.freeze({
@@ -100,7 +118,7 @@ export class SettingsManager {
     try {
       const parsed = JSON.parse(raw);
       return {
-        fontFamily: ['serif', 'sans', 'dyslexic'].includes(parsed.fontFamily)
+        fontFamily: VALID_FONTS.includes(parsed.fontFamily)
           ? parsed.fontFamily
           : DEFAULT_TYPOGRAPHY.fontFamily,
         fontSize: typeof parsed.fontSize === 'number' && parsed.fontSize >= 12 && parsed.fontSize <= 40
@@ -111,7 +129,22 @@ export class SettingsManager {
           : DEFAULT_TYPOGRAPHY.lineHeight,
         maxWidth: typeof parsed.maxWidth === 'number' && parsed.maxWidth >= 480 && parsed.maxWidth <= 1200
           ? parsed.maxWidth
-          : DEFAULT_TYPOGRAPHY.maxWidth
+          : DEFAULT_TYPOGRAPHY.maxWidth,
+        fontWeight: typeof parsed.fontWeight === 'number' && parsed.fontWeight >= 300 && parsed.fontWeight <= 700
+          ? parsed.fontWeight
+          : DEFAULT_TYPOGRAPHY.fontWeight,
+        textAlign: VALID_ALIGNMENTS.includes(parsed.textAlign)
+          ? parsed.textAlign
+          : DEFAULT_TYPOGRAPHY.textAlign,
+        paragraphSpacing: typeof parsed.paragraphSpacing === 'number' && parsed.paragraphSpacing >= 0.4 && parsed.paragraphSpacing <= 3.0
+          ? parsed.paragraphSpacing
+          : DEFAULT_TYPOGRAPHY.paragraphSpacing,
+        letterSpacing: typeof parsed.letterSpacing === 'number' && parsed.letterSpacing >= -0.05 && parsed.letterSpacing <= 0.25
+          ? parsed.letterSpacing
+          : DEFAULT_TYPOGRAPHY.letterSpacing,
+        wordSpacing: typeof parsed.wordSpacing === 'number' && parsed.wordSpacing >= 0 && parsed.wordSpacing <= 0.5
+          ? parsed.wordSpacing
+          : DEFAULT_TYPOGRAPHY.wordSpacing
       };
     } catch (e) {
       return { ...DEFAULT_TYPOGRAPHY };
@@ -126,6 +159,16 @@ export class SettingsManager {
     const current = this.getTypography();
     const updated = { ...current, ...partial };
     this._safeSet(STORAGE_KEYS.TYPOGRAPHY, JSON.stringify(updated));
+  }
+
+  /**
+   * Resets typography settings back to defaults.
+   * @returns {Object}
+   */
+  static resetTypography() {
+    const defaults = { ...DEFAULT_TYPOGRAPHY };
+    this._safeSet(STORAGE_KEYS.TYPOGRAPHY, JSON.stringify(defaults));
+    return defaults;
   }
 
   /**

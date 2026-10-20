@@ -15,9 +15,18 @@ import { SettingsManager } from '../storage/settings-store.js';
 
 export const FONT_FAMILIES = Object.freeze({
   serif: "'Merriweather', 'Georgia', 'Iowan Old Style', 'Palatino Linotype', serif",
+  literata: "'Literata', 'Georgia', 'Iowan Old Style', 'Palatino Linotype', serif",
+  merriweather: "'Merriweather', 'Georgia', 'Palatino Linotype', serif",
+  lora: "'Lora', 'Georgia', 'Palatino Linotype', serif",
+  garamond: "'EB Garamond', 'Garamond', 'Baskerville', 'Georgia', serif",
+  crimson: "'Crimson Pro', 'Minion Pro', 'Georgia', serif",
   sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif",
   dyslexic: "'OpenDyslexic', 'Comic Sans MS', 'Trebuchet MS', 'Verdana', monospace"
 });
+
+export const GOOGLE_FONTS_URL =
+  'https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..700;1,300..700&family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Literata:ital,opsz,wght@0,7..72,300..700;1,7..72,300..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap';
+
 
 export const THEME_PALETTES = Object.freeze({
   'warm-paper': {
@@ -298,23 +307,33 @@ export class ReaderEngine {
         iframeDoc.write('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body></body></html>');
         iframeDoc.close();
 
-        // Adopt head styles from chapterDoc
+        // Adopt head styles from chapterDoc in a single DocumentFragment batch
         if (chapterDoc.head) {
+          const headFrag = iframeDoc.createDocumentFragment();
           const headNodes = Array.from(chapterDoc.head.childNodes);
           for (const node of headNodes) {
             if (node.nodeName.toLowerCase() !== 'script') {
-              iframeDoc.head.appendChild(iframeDoc.importNode(node, true));
+              headFrag.appendChild(iframeDoc.importNode(node, true));
             }
           }
+          iframeDoc.head.appendChild(headFrag);
         }
 
-        // Adopt body content from chapterDoc
+        // Adopt body content from chapterDoc in a single DocumentFragment batch
         if (chapterDoc.body) {
+          const bodyFrag = iframeDoc.createDocumentFragment();
           const bodyNodes = Array.from(chapterDoc.body.childNodes);
           for (const node of bodyNodes) {
             if (node.nodeName.toLowerCase() !== 'script') {
-              iframeDoc.body.appendChild(iframeDoc.importNode(node, true));
+              bodyFrag.appendChild(iframeDoc.importNode(node, true));
             }
+          }
+          iframeDoc.body.appendChild(bodyFrag);
+
+          // Enable async image decoding so embedded book illustrations never block main-thread layout
+          const imgs = iframeDoc.body.querySelectorAll('img');
+          for (const img of imgs) {
+            img.decoding = 'async';
           }
         }
 
@@ -735,7 +754,58 @@ export class ReaderEngine {
   }
 
   /**
-   * Applies typography settings (fontFamily, fontSize, lineHeight, maxWidth) to host and iframe.
+   * Injects or updates Google Fonts stylesheet inside both the host document and reader iframe.
+   * Uses cached @font-face CSS (or <link> fallback) with instant local system serif fallbacks.
+   * @param {Document} [targetDoc]
+   * @private
+   */
+  _injectGoogleFontsStylesheet(targetDoc) {
+    const docs = [];
+    if (typeof document !== 'undefined' && document.head) {
+      docs.push(document);
+    }
+    if (targetDoc && targetDoc.head && targetDoc !== document) {
+      docs.push(targetDoc);
+    }
+
+    if (ReaderEngine._cachedGoogleFontsCss) {
+      for (const doc of docs) {
+        let styleEl = doc.getElementById('webreader-google-fonts-style');
+        if (!styleEl) {
+          styleEl = doc.createElement('style');
+          styleEl.id = 'webreader-google-fonts-style';
+          doc.head.appendChild(styleEl);
+        }
+        if (styleEl.textContent !== ReaderEngine._cachedGoogleFontsCss) {
+          styleEl.textContent = ReaderEngine._cachedGoogleFontsCss;
+        }
+      }
+      return;
+    }
+
+    // Fetch Google Fonts CSS once in background when online and inject into host + iframe
+    const googleFontIds = ['literata', 'merriweather', 'lora', 'garamond', 'crimson'];
+    const shouldFetch = googleFontIds.includes(this.typography?.fontFamily);
+    if (shouldFetch && !ReaderEngine._googleFontsFetchPromise && typeof fetch === 'function') {
+      if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+        ReaderEngine._googleFontsFetchPromise = fetch(GOOGLE_FONTS_URL, { mode: 'cors' })
+          .then(res => (res.ok ? res.text() : null))
+          .then(cssText => {
+            if (cssText) {
+              ReaderEngine._cachedGoogleFontsCss = cssText;
+              this._injectGoogleFontsStylesheet(this.iframe?.contentDocument);
+            }
+          })
+          .catch(() => {
+            // Graceful fallback to local system serifs if offline or blocked
+          });
+      }
+    }
+  }
+
+  /**
+   * Applies typography settings (fontFamily, fontSize, lineHeight, maxWidth,
+   * fontWeight, textAlign, paragraphSpacing, letterSpacing, wordSpacing) to host and iframe.
    * @param {object} partialTypography
    */
   applyTypography(partialTypography = {}) {
@@ -744,11 +814,18 @@ export class ReaderEngine {
       ...partialTypography
     };
     SettingsManager.setTypography(this.typography);
+    this.typography = SettingsManager.getTypography();
 
     const fontStack = FONT_FAMILIES[this.typography.fontFamily] || FONT_FAMILIES.serif;
     const fontSizePx = `${Number(this.typography.fontSize) || 18}px`;
     const lineHeightVal = String(Number(this.typography.lineHeight) || 1.75);
     const maxWidthPx = `${Number(this.typography.maxWidth) || 720}px`;
+    const fontWeightVal = String(Number(this.typography.fontWeight) || 400);
+    const textAlignVal = this.typography.textAlign === 'justify' ? 'justify' : 'left';
+    const hyphensVal = textAlignVal === 'justify' ? 'auto' : 'manual';
+    const paraSpacingVal = `${Number(this.typography.paragraphSpacing ?? 1.25).toFixed(2)}em`;
+    const letterSpacingVal = `${Number(this.typography.letterSpacing ?? 0).toFixed(2)}em`;
+    const wordSpacingVal = `${Number(this.typography.wordSpacing ?? 0).toFixed(2)}em`;
 
     const targets = [document.documentElement];
     if (this.stage) targets.push(this.stage);
@@ -758,34 +835,61 @@ export class ReaderEngine {
       el.style.setProperty('--reader-font-size', fontSizePx);
       el.style.setProperty('--reader-line-height', lineHeightVal);
       el.style.setProperty('--reader-max-width', maxWidthPx);
+      el.style.setProperty('--reader-font-weight', fontWeightVal);
+      el.style.setProperty('--reader-text-align', textAlignVal);
+      el.style.setProperty('--reader-hyphens', hyphensVal);
+      el.style.setProperty('--reader-paragraph-spacing', paraSpacingVal);
+      el.style.setProperty('--reader-letter-spacing', letterSpacingVal);
+      el.style.setProperty('--reader-word-spacing', wordSpacingVal);
     }
     if (this.stage) {
       this.stage.style.fontSize = fontSizePx;
     }
 
     const iframeDoc = this.iframe?.contentDocument;
+    this._injectGoogleFontsStylesheet(iframeDoc);
+
     if (iframeDoc && iframeDoc.documentElement) {
       const iRoot = iframeDoc.documentElement;
       iRoot.style.setProperty('--reader-font-family', fontStack);
       iRoot.style.setProperty('--reader-font-size', fontSizePx);
       iRoot.style.setProperty('--reader-line-height', lineHeightVal);
       iRoot.style.setProperty('--reader-max-width', maxWidthPx);
+      iRoot.style.setProperty('--reader-font-weight', fontWeightVal);
+      iRoot.style.setProperty('--reader-text-align', textAlignVal);
+      iRoot.style.setProperty('--reader-hyphens', hyphensVal);
+      iRoot.style.setProperty('--reader-paragraph-spacing', paraSpacingVal);
+      iRoot.style.setProperty('--reader-letter-spacing', letterSpacingVal);
+      iRoot.style.setProperty('--reader-word-spacing', wordSpacingVal);
 
       const viewW = this.iframe.clientWidth || 1000;
       const targetW = Number(this.typography.maxWidth) || 720;
       const horizPad = Math.max(28, Math.round((viewW - Math.min(viewW - 56, targetW)) / 2));
       iRoot.style.setProperty('--page-padding-h', `${horizPad}px`);
 
-      if (this.mode === 'scroll') {
-        this.scrollView._syncIframeHeight();
-      } else if (this.mode === 'paginated') {
-        const oldRatio = this.paginatedView.getProgress().progressRatio;
-        this.paginatedView.calculatePagination();
-        this.paginatedView.syncFromScrollRatio(oldRatio);
+      const typoSignature = `${fontStack}|${fontSizePx}|${lineHeightVal}|${maxWidthPx}|${fontWeightVal}|${textAlignVal}|${paraSpacingVal}|${letterSpacingVal}|${wordSpacingVal}|${horizPad}`;
+      const needsReflow = !this._isLoadingChapter && iRoot.dataset.typoSignature !== typoSignature;
+      iRoot.dataset.typoSignature = typoSignature;
+
+      if (needsReflow) {
+        if (this.mode === 'scroll') {
+          this.scrollView._syncIframeHeight();
+        } else if (this.mode === 'paginated') {
+          const oldRatio = this.paginatedView.getProgress().progressRatio;
+          this.paginatedView.syncFromScrollRatio(oldRatio);
+        }
       }
     }
 
     EventBus.emit(EVENTS.TYPOGRAPHY_CHANGED, { ...this.typography });
+  }
+
+  /**
+   * Resets all typography settings back to factory defaults and re-applies them.
+   */
+  resetTypography() {
+    const defaults = SettingsManager.resetTypography();
+    this.applyTypography(defaults);
   }
 
   /**

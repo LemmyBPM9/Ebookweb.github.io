@@ -22,7 +22,9 @@ export class ScrollView {
     this.scrollRatio = 0;
     this.isActive = false;
     this._resizeObserver = null;
-    this._boundOnScroll = this._handleScroll.bind(this);
+    this._scrollRafId = null;
+    this._resizeRafId = null;
+    this._boundOnScroll = this._scheduleScroll.bind(this);
   }
 
   /**
@@ -95,7 +97,11 @@ export class ScrollView {
         color: var(--color-text, #2c2523) !important;
         font-family: var(--reader-font-family, serif) !important;
         font-size: var(--reader-font-size, 18px) !important;
+        font-size-adjust: from-font;
+        font-weight: var(--reader-font-weight, 400) !important;
         line-height: var(--reader-line-height, 1.75) !important;
+        letter-spacing: var(--reader-letter-spacing, 0em) !important;
+        word-spacing: var(--reader-word-spacing, 0em) !important;
       }
       #content-wrapper, body > * {
         max-width: var(--reader-max-width, 720px) !important;
@@ -110,6 +116,25 @@ export class ScrollView {
         padding: 72px 32px 96px 32px !important;
         box-sizing: border-box !important;
         transform: none !important;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        line-height: 1.3 !important;
+        text-wrap: balance;
+      }
+      p, blockquote, li {
+        font-family: var(--reader-font-family, serif) !important;
+        font-weight: var(--reader-font-weight, 400) !important;
+        line-height: var(--reader-line-height, 1.75) !important;
+        letter-spacing: var(--reader-letter-spacing, 0em) !important;
+        word-spacing: var(--reader-word-spacing, 0em) !important;
+        text-align: var(--reader-text-align, left) !important;
+        -webkit-hyphens: var(--reader-hyphens, manual) !important;
+        hyphens: var(--reader-hyphens, manual) !important;
+      }
+      p {
+        word-break: break-word;
+        overflow-wrap: break-word;
+        margin-bottom: var(--reader-paragraph-spacing, 1.25em) !important;
       }
       img, svg, picture, figure, video, canvas {
         max-width: 100% !important;
@@ -294,6 +319,18 @@ export class ScrollView {
     };
   }
 
+  _scheduleScroll() {
+    if (!this.isActive || this._scrollRafId) return;
+    if (typeof requestAnimationFrame === 'function') {
+      this._scrollRafId = requestAnimationFrame(() => {
+        this._scrollRafId = null;
+        this._handleScroll();
+      });
+    } else {
+      this._handleScroll();
+    }
+  }
+
   _handleScroll() {
     if (!this.isActive || !this.stage) return;
     const maxScroll = Math.max(0, this.stage.scrollHeight - this.stage.clientHeight);
@@ -315,7 +352,13 @@ export class ScrollView {
     const doc = this._getDoc();
     if (typeof ResizeObserver !== 'undefined' && doc && doc.body) {
       this._resizeObserver = new ResizeObserver(() => {
-        if (this.isActive) {
+        if (!this.isActive || this._resizeRafId) return;
+        if (typeof requestAnimationFrame === 'function') {
+          this._resizeRafId = requestAnimationFrame(() => {
+            this._resizeRafId = null;
+            if (this.isActive) this._syncIframeHeight();
+          });
+        } else {
           this._syncIframeHeight();
         }
       });
@@ -324,6 +367,14 @@ export class ScrollView {
   }
 
   _detachListeners() {
+    if (this._scrollRafId && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(this._scrollRafId);
+      this._scrollRafId = null;
+    }
+    if (this._resizeRafId && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(this._resizeRafId);
+      this._resizeRafId = null;
+    }
     if (this.stage) {
       this.stage.removeEventListener('scroll', this._boundOnScroll);
     }

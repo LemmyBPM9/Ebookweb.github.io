@@ -592,6 +592,64 @@ describe('Tier 1: Feature Coverage (Core Requirements Verification)', (test) => 
       });
 
       assert(computedFontSize.includes('24'), `Font size should update to 24px, got: ${computedFontSize}`);
+
+      // Verify classic book serif selection (e.g. Literata & EB Garamond)
+      const garamondBtn = await waitForAnySelector(page, '[data-font-choice="garamond"]');
+      await garamondBtn.click();
+      await sleep(150);
+
+      // Verify advanced typography controls (Font Weight, Text Alignment, Paragraph/Letter/Word Spacing)
+      const justifyBtn = await waitForAnySelector(page, '[data-align-choice="justify"]');
+      await justifyBtn.click();
+
+      await page.evaluate(() => {
+        const setSlider = (selector, val) => {
+          const el = document.querySelector(selector);
+          if (el) {
+            el.value = String(val);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        };
+        setSlider('#font-weight-slider', '500');
+        setSlider('#paragraph-spacing-slider', '1.6');
+        setSlider('#letter-spacing-slider', '0.04');
+        setSlider('#word-spacing-slider', '0.08');
+      });
+      await sleep(200);
+
+      const advTypoState = await page.evaluate(() => {
+        const root = getComputedStyle(document.documentElement);
+        const iframe = document.querySelector('iframe#reader-frame');
+        const iRoot = iframe?.contentDocument ? getComputedStyle(iframe.contentDocument.documentElement) : root;
+        return {
+          fontFamily: iRoot.getPropertyValue('--reader-font-family').trim(),
+          fontWeight: iRoot.getPropertyValue('--reader-font-weight').trim(),
+          textAlign: iRoot.getPropertyValue('--reader-text-align').trim(),
+          hyphens: iRoot.getPropertyValue('--reader-hyphens').trim(),
+          paraSpacing: iRoot.getPropertyValue('--reader-paragraph-spacing').trim(),
+          letterSpacing: iRoot.getPropertyValue('--reader-letter-spacing').trim(),
+          wordSpacing: iRoot.getPropertyValue('--reader-word-spacing').trim()
+        };
+      });
+
+      assert(advTypoState.fontFamily.includes('EB Garamond'), `Expected EB Garamond in font stack, got: ${advTypoState.fontFamily}`);
+      assertEqual(advTypoState.fontWeight, '500', 'Font weight should update to 500');
+      assertEqual(advTypoState.textAlign, 'justify', 'Text alignment should update to justify');
+      assertEqual(advTypoState.hyphens, 'auto', 'Justified alignment should automatically enable hyphens: auto');
+      assertEqual(advTypoState.paraSpacing, '1.60em', 'Paragraph spacing should update to 1.60em');
+      assertEqual(advTypoState.letterSpacing, '0.04em', 'Letter spacing should update to 0.04em');
+      assertEqual(advTypoState.wordSpacing, '0.08em', 'Word spacing should update to 0.08em');
+
+      // Verify one-click Reset Typography Defaults button
+      const resetBtn = await waitForAnySelector(page, '#btn-reset-typography');
+      await resetBtn.click();
+      await sleep(150);
+
+      const postResetFontSize = await page.evaluate(() => {
+        return getComputedStyle(document.documentElement).getPropertyValue('--reader-font-size').trim();
+      });
+      assertEqual(postResetFontSize, '18px', 'Reset Typography button should restore 18px default font size');
     } finally {
       await close();
     }
